@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-// import { useSidebar } from "@/components/ui/sidebar"
+import { useSidebar } from "@/components/ui/sidebar"
 
 import { cn } from "@/lib/utils";
 
@@ -13,14 +13,13 @@ interface LogoProps {
 }
 
 export const Logo = ({ callbackUrl, className }: LogoProps) => {
-    let open = false;
-    // const { open } = useSidebar();
+    const { open } = useSidebar();
 
     return (
         <Link href={callbackUrl || "/"} className={cn("flex items-center gap-2", className)}>
             <Image src="/logo.svg" alt="Logo" width={40} height={40} />
             <span className={cn("text-lg font-bold text-primary", open ? "block" : "hidden")}>
-                TomarSports
+                HMS
             </span>
         </Link>
     );
