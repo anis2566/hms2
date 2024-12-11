@@ -1,4 +1,15 @@
-export const AUTH_COOKIE = "access-token"
+import {
+  FileText,
+  LucideIcon,
+  Calendar,
+  FileSpreadsheet,
+  DollarSign,
+  User,
+  Heart,
+  GalleryVertical,
+} from "lucide-react";
+
+export const AUTH_COOKIE = "access-token";
 
 export enum ROLE {
   ADMIN = "ADMIN",
@@ -29,3 +40,73 @@ export enum BLOOD_GROUP {
   O_POSITIVE = "O+",
   O_NEGATIVE = "O-",
 }
+
+export enum TITLE {
+  DR = "Dr.",
+  MR = "Mr.",
+  MRS = "Mrs.",
+  MS = "Ms.",
+}
+
+export enum MEDICINE_INSTRUCTION {
+  BEFORE_MEAL = "Before Meal",
+  AFTER_MEAL = "After Meal",
+  WITH_FOOD = "With Food",
+  WITH_WATER = "With Water",
+  AS_NEEDED = "As Needed",
+  AS_DIRECTED = "As Directed",
+}
+
+export enum MEDICINE_FREQUENCY {
+  ONCE_A_DAY = "Once a Day",
+  TWICE_A_DAY = "Twice a Day",
+  THREE_TIMES_A_DAY = "Three Times a Day",
+  FOUR_TIMES_A_DAY = "Four Times a Day",
+  FIVE_TIMES_A_DAY = "Five Times a Day",
+}
+
+type PatientSidebarNavs = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  isHome?: boolean;
+};
+
+export const patientSidebarNavs: PatientSidebarNavs[] = [
+  {
+    href: "/",
+    label: "Medical Record",
+    icon: FileText,
+  },
+  {
+    href: "/appointment",
+    label: "Appointments",
+    icon: Calendar,
+  },
+  {
+    href: "/invoices",
+    label: "Invoices",
+    icon: FileSpreadsheet,
+  },
+  {
+    href: "/payments",
+    label: "Payments",
+    icon: DollarSign,
+  },
+  {
+    href: "/images",
+    label: "Images",
+    icon: GalleryVertical,
+  },
+  {
+    href: "/",
+    label: "Personal Information",
+    icon: User,
+    isHome: true,
+  },
+  {
+    href: "/health",
+    label: "Health Information",
+    icon: Heart,
+  },
+];

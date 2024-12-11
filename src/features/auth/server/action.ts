@@ -22,6 +22,7 @@ export const getCurrent = cache(async () => {
 
   const user: JWTPayload = {
     name: decodedPayload.name as string,
+    email: decodedPayload.email as string,
     image: decodedPayload.image as string | null,
     userId: decodedPayload.userId as string,
     role: decodedPayload.role as string,

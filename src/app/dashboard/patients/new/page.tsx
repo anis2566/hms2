@@ -7,7 +7,7 @@ import { ContentLayout } from "@/features/dashboard/components/content-layout";
 import { PatientForm } from "@/features/dashboard/patients/components/patient-form";
 
 export const metadata: Metadata = {
-    title: "Dashboard | New",
+    title: "Dashboard | Patients | New",
     description: "New patient",
 };
 

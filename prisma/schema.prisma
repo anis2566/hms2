@@ -17,6 +17,8 @@ model User {
   role          String          @default("User")
   status        String          @default("Pending")
 
+  doctor        Doctor?
+
   accounts      Account[]
   sessions      Session[]
   Authenticator Authenticator[]
@@ -96,6 +98,139 @@ model Patient {
   emergencyContact String
   bloodGroup String?
 
+  medicalRecords MedicalRecord[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+
+model Doctor {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  title     String
+  email     String
+  password  String
+  phone     String
+  address   String
+  imageUrl  String?
+
+  userId    String   @unique @db.ObjectId
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  medicalRecords MedicalRecord[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Treatment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  description String
+
+  medicalRecordTreatments MedicalRecordTreatment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Medicine {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  description String?
+  sideEffects String?
+  price Int
+
+  genericId String @db.ObjectId
+  generic   MedicineGeneric @relation(fields: [genericId], references: [id])
+
+  manufacturerId String @db.ObjectId
+  manufacturer   MedicineManufacturer @relation(fields: [manufacturerId], references: [id])
+
+  medicalRecords MedicalRecordMedicine[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model MedicineGeneric {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  description String?
+
+  medicines Medicine[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MedicineManufacturer {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  description String?
+  imageUrl  String?
+
+  medicines Medicine[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MedicalRecord {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  complains     String
+  diagnosis String?
+  vitalSigns String?
+
+  doctorId  String @db.ObjectId
+  doctor    Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  patientId String @db.ObjectId
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  treatments MedicalRecordTreatment[]
+  medicines MedicalRecordMedicine[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model MedicalRecordTreatment {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+
+  medicalRecordId String        @db.ObjectId
+  medicalRecord   MedicalRecord @relation(fields: [medicalRecordId], references: [id], onDelete: Cascade)
+  
+  treatmentId     String        @db.ObjectId
+  treatment       Treatment     @relation(fields: [treatmentId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([medicalRecordId, treatmentId])
+}
+
+
+model MedicalRecordMedicine {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  instruction String
+  frequency String
+  quantity Int
+
+  medicineId String @db.ObjectId
+  medicine   Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
+
+  medicalRecordId String @db.ObjectId
+  medicalRecord MedicalRecord @relation(fields: [medicalRecordId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([medicalRecordId, medicineId])
 }

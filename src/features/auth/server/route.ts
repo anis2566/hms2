@@ -76,6 +76,8 @@ const app = new Hono()
       exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30,
     };
 
+    console.log(payload);
+
     const secret = process.env.JWT_SECRET!;
     const token = await sign(payload, secret);
 
@@ -87,7 +89,7 @@ const app = new Hono()
       expires: new Date(Date.now() + 60 * 60 * 24 * 30 * 1000),
     });
 
-    return c.json({ success: "Login successful", token });
+    return c.json({ success: "Login successful" });
   })
   .get("/current", sessionMiddleware, async (c) => {
     const user = c.get("user");

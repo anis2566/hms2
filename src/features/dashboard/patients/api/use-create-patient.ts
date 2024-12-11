@@ -18,21 +18,21 @@ export const useCreatePatient = () => {
       const res = await client.api.patients.$post({ json });
       return await res.json();
     },
-    // onSuccess: (data) => {
-    //   if ("error" in data) {
-    //     toast.error(data.error, {
-    //       duration: 5000,
-    //     });
-    //   }
+    onSuccess: (data) => {
+      if ("error" in data) {
+        toast.error(data.error, {
+          duration: 5000,
+        });
+      }
 
-    //   if ("success" in data) {
-    //     toast.success(data.success, {
-    //       duration: 5000,
-    //     });
-    //     router.push("/dashboard/patients");
-    //     queryClient.invalidateQueries({ queryKey: ["patients"] });
-    //   }
-    // },
+      if ("success" in data) {
+        toast.success(data.success, {
+          duration: 5000,
+        });
+        router.push("/dashboard/patients");
+        queryClient.invalidateQueries({ queryKey: ["patients"] });
+      }
+    },
   });
 
   return mutation;

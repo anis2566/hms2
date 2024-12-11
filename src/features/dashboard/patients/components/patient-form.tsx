@@ -66,10 +66,8 @@ export const PatientForm = () => {
   });
 
   const onSubmit = (values: PatientSchemaType) => {
-    createPatient({ ...values, dob: new Date(values.dob) });
+    createPatient({ ...values });
   };
-
-  console.log(typeof form.watch("dob"));
 
   return (
     <Card>
@@ -197,15 +195,15 @@ export const PatientForm = () => {
                       <Calendar
                         mode="single"
                         captionLayout="dropdown"
-                        selected={date || field.value}
+                        selected={date || new Date(field.value)}
                         onSelect={(selectedDate) => {
                           setDate(selectedDate!);
-                          field.onChange(selectedDate);
+                          field.onChange(selectedDate?.toDateString());
                         }}
                         onDayClick={() => setIsOpen(false)}
                         fromYear={1900}
                         toYear={new Date().getFullYear()}
-                        defaultMonth={field.value}
+                        defaultMonth={new Date(field.value)}
                       />
                     </PopoverContent>
                   </Popover>
