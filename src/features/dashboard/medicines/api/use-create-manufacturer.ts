@@ -7,7 +7,7 @@ import { client } from "@/lib/rpc";
 
 type RequestType = InferRequestType<
   typeof client.api.medicines.manufacturers.create.$post
->["json"];
+>["form"];
 type ResponseType = InferResponseType<
   typeof client.api.medicines.manufacturers.create.$post
 >;
@@ -22,9 +22,13 @@ export const useCreateManufacturer = ({
   const queryClient = useQueryClient();
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
-    mutationFn: async (json) => {
+    mutationFn: async (form) => {
       const res = await client.api.medicines.manufacturers.create.$post({
-        json,
+        form: {
+          name: form.name,
+          description: form.description,
+          imageUrl: form.imageUrl,
+        },
       });
       return await res.json();
     },

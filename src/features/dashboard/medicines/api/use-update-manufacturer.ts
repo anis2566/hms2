@@ -21,9 +21,13 @@ export const useUpdateManufacturer = ({
   const queryClient = useQueryClient();
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
-    mutationFn: async ({ json, param }) => {
+    mutationFn: async ({ form, param }) => {
+      console.log(form);
       const res = await client.api.medicines.manufacturers.edit[":id"]["$put"]({
-        json,
+        form: {
+          name: form.name,
+          description: form.description,
+        },
         param: { id: param.id },
       });
       return await res.json();

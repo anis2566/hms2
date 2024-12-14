@@ -99,6 +99,7 @@ model Patient {
   bloodGroup String?
 
   medicalRecords MedicalRecord[]
+  appointments Appointment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -119,6 +120,7 @@ model Doctor {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   medicalRecords MedicalRecord[]
+  appointments Appointment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -185,6 +187,7 @@ model MedicalRecord {
   complains     String
   diagnosis String?
   vitalSigns String?
+  attachments String[] @default([])
 
   doctorId  String @db.ObjectId
   doctor    Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
@@ -222,6 +225,8 @@ model MedicalRecordMedicine {
   instruction String
   frequency String
   quantity Int
+  dosage String[]
+  dosageQuantity Int
 
   medicineId String @db.ObjectId
   medicine   Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
@@ -233,4 +238,24 @@ model MedicalRecordMedicine {
   updatedAt DateTime @updatedAt
 
   @@unique([medicalRecordId, medicineId])
+}
+
+
+model Appointment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  purpose   String
+  description String?
+  date      DateTime
+  startTime DateTime
+  endTime   DateTime
+  status    String @default("Pending")
+
+  patientId String @db.ObjectId
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  doctorId String @db.ObjectId
+  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

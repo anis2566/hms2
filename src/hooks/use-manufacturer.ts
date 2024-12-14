@@ -1,7 +1,5 @@
 import { create } from "zustand";
 
-import { ManufacturerSchemaType } from "@/features/dashboard/medicines/schemas";
-
 interface CreateManufacturerState {
   isOpen: boolean;
   onOpen: () => void;
@@ -14,11 +12,17 @@ export const useCreateManufacturer = create<CreateManufacturerState>((set) => ({
   onClose: () => set({ isOpen: false }),
 }));
 
+type Manufacturer = {
+  name: string;
+  description: string;
+  imageUrl: string | null;
+};
+
 interface UpdateManufacturerState {
   isOpen: boolean;
   id: string;
-  manufacturer: ManufacturerSchemaType | null;
-  onOpen: (id: string, manufacturer: ManufacturerSchemaType) => void;
+  manufacturer: Manufacturer | null;
+  onOpen: (id: string, manufacturer: Manufacturer) => void;
   onClose: () => void;
 }
 
@@ -26,7 +30,7 @@ export const useUpdateManufacturer = create<UpdateManufacturerState>((set) => ({
   isOpen: false,
   id: "",
   manufacturer: null,
-  onOpen: (id: string, manufacturer: ManufacturerSchemaType) =>
+  onOpen: (id: string, manufacturer: Manufacturer) =>
     set({ isOpen: true, id, manufacturer }),
   onClose: () => set({ isOpen: false, id: "", manufacturer: null }),
 }));

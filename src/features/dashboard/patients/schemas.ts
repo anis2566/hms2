@@ -27,7 +27,7 @@ export const PatientSchema = z.object({
 
 export type PatientSchemaType = z.infer<typeof PatientSchema>;
 
-const MedicalRecordMedicineSchema = z.object({
+export const MedicalRecordMedicineSchema = z.object({
   instruction: z
     .nativeEnum(MEDICINE_INSTRUCTION)
     .refine((value) => Object.values(MEDICINE_INSTRUCTION).includes(value), {
@@ -39,17 +39,26 @@ const MedicalRecordMedicineSchema = z.object({
       message: "required",
     }),
   quantity: z.number({ required_error: "required" }),
+  dosageQuantity: z.number({ required_error: "required" }),
+  dosage: z.array(z.string()),
   medicineId: requiredString,
+  medicinePrice: z.number({ required_error: "required" }),
+  medicineName: z.string({ required_error: "required" }),
 });
 
+export type MedicalRecordMedicineSchemaType = z.infer<
+  typeof MedicalRecordMedicineSchema
+>;
+
 export const MedicalRecordSchema = z.object({
+  patientId: requiredString,
   complains: requiredString,
   diagnosis: z.string().optional(),
   vitalSigns: z.string().optional(),
   doctorId: requiredString,
-  patientId: requiredString,
   treatments: z.array(z.string()),
   medicines: z.array(MedicalRecordMedicineSchema),
+  attachments: z.array(z.instanceof(File)).optional(),
 });
 
 export type MedicalRecordSchemaType = z.infer<typeof MedicalRecordSchema>;

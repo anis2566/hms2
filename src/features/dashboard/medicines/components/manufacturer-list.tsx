@@ -68,7 +68,7 @@ export const ManufacturerList = () => {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem className="flex items-center gap-x-3" onClick={() => onOpen(manufacturer.id, { name: manufacturer.name, description: manufacturer.description || "", imageUrl: manufacturer.imageUrl || "" })}>
+                                                    <DropdownMenuItem className="flex items-center gap-x-3" onClick={() => onOpen(manufacturer.id, { name: manufacturer.name, description: manufacturer.description || "", imageUrl: manufacturer.imageUrl || null })}>
                                                         <Edit className="w-5 h-5" />
                                                         <p>Edit</p>
                                                     </DropdownMenuItem>

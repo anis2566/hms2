@@ -24,6 +24,13 @@ export enum STATUS {
   REJECTED = "REJECTED",
 }
 
+export enum APPOINTMENT_STATUS {
+  PENDING = "PENDING",
+  CONFIRMED = "CONFIRMED",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
+}
+
 export enum GENDER {
   MALE = "MALE",
   FEMALE = "FEMALE",
@@ -65,6 +72,12 @@ export enum MEDICINE_FREQUENCY {
   FIVE_TIMES_A_DAY = "Five Times a Day",
 }
 
+export enum MEDICINE_DOSAGE {
+  MORNING = "Morning (M)",
+  AFTERNOON = "Afternoon (A)",
+  EVENING = "Evening (E)",
+}
+
 type PatientSidebarNavs = {
   href: string;
   label: string;
@@ -79,7 +92,7 @@ export const patientSidebarNavs: PatientSidebarNavs[] = [
     icon: FileText,
   },
   {
-    href: "/appointment",
+    href: "/appointments",
     label: "Appointments",
     icon: Calendar,
   },

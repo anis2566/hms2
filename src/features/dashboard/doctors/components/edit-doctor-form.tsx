@@ -2,8 +2,10 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Send } from "lucide-react";
+import { Send, Trash2 } from "lucide-react";
 import { Doctor } from "@prisma/client";
+import { useState, useEffect } from "react";
+import Image from "next/image";
 
 import {
     Card,
@@ -23,36 +25,74 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 import { LoadingButton } from "@/components/loading-button";
-import { DoctorSchema, DoctorSchemaType } from "../schemas";
+import { DoctorSchemaTypeWithoutImage, DoctorSchemaWithoutImage } from "../schemas";
 import { TITLE } from "@/constant";
 import { useUpdateDoctor } from "../api/use-update-doctor";
+import FileUpload from "@/components/ui/file-upload";
+import { useUpdateDoctorWithImage } from "../api/use-update-doctor-with-image";
 
 interface EditDoctorFormProps {
     doctor: Doctor
 }
 
 export const EditDoctorForm = ({ doctor }: EditDoctorFormProps) => {
+    const [imageUrl, setImageUrl] = useState<string | null>(null);
 
     const { mutate: updateDoctor, isPending } = useUpdateDoctor();
+    const { mutate: updateDoctorWithImage, isPending: isPendingWithImage } = useUpdateDoctorWithImage();
 
-    const form = useForm<DoctorSchemaType>({
-        resolver: zodResolver(DoctorSchema),
+    useEffect(() => {
+        if (doctor.imageUrl) {
+            setImageUrl(doctor.imageUrl);
+        }
+    }, [doctor.imageUrl]);
+
+    const form = useForm<DoctorSchemaTypeWithoutImage>({
+        resolver: zodResolver(DoctorSchemaWithoutImage),
         defaultValues: {
             name: doctor.name,
             title: doctor.title,
             email: doctor.email,
             phone: doctor.phone,
             address: doctor.address,
-            imageUrl: doctor.imageUrl ?? undefined,
-            password: doctor.password ?? undefined,
+            imageUrl: undefined,
+            password: doctor.password,
         },
     });
 
-    const onSubmit = (values: DoctorSchemaType) => {
-        updateDoctor({ json: values, param: { id: doctor.id } });
+    const onSubmit = (values: DoctorSchemaTypeWithoutImage) => {
+        if (values.imageUrl) {
+            updateDoctorWithImage({
+                param: { id: doctor.id },
+                form: {
+                    name: values.name,
+                    title: values.title,
+                    email: values.email,
+                    phone: values.phone,
+                    address: values.address,
+                    password: values.password,
+                    imageUrl: values.imageUrl,
+                },
+            });
+        } else {
+            updateDoctor({
+                param: { id: doctor.id },
+                form: {
+                    name: values.name,
+                    title: values.title,
+                    email: values.email,
+                    phone: values.phone,
+                    address: values.address,
+                    password: values.password,
+                },
+            });
+        }
     }
+
+    console.log(form.formState.errors);
 
     return (
         <Card>
@@ -70,7 +110,7 @@ export const EditDoctorForm = ({ doctor }: EditDoctorFormProps) => {
                                 <FormItem>
                                     <FormLabel>Full Name</FormLabel>
                                     <FormControl>
-                                        <Input {...field} disabled={isPending} />
+                                        <Input {...field} disabled={isPending || isPendingWithImage} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -83,7 +123,7 @@ export const EditDoctorForm = ({ doctor }: EditDoctorFormProps) => {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Title</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isPending}>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isPending || isPendingWithImage}>
                                         <FormControl>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select a title" />
@@ -109,7 +149,7 @@ export const EditDoctorForm = ({ doctor }: EditDoctorFormProps) => {
                                 <FormItem>
                                     <FormLabel>Email</FormLabel>
                                     <FormControl>
-                                        <Input {...field} disabled={isPending} />
+                                        <Input {...field} disabled={isPending || isPendingWithImage} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -123,7 +163,7 @@ export const EditDoctorForm = ({ doctor }: EditDoctorFormProps) => {
                                 <FormItem>
                                     <FormLabel>Phone</FormLabel>
                                     <FormControl>
-                                        <Input {...field} disabled={isPending} />
+                                        <Input {...field} disabled={isPending || isPendingWithImage} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -137,15 +177,47 @@ export const EditDoctorForm = ({ doctor }: EditDoctorFormProps) => {
                                 <FormItem>
                                     <FormLabel>Address</FormLabel>
                                     <FormControl>
-                                        <Textarea {...field} disabled={isPending} />
+                                        <Textarea {...field} disabled={isPending || isPendingWithImage} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
 
+                        <FormField
+                            control={form.control}
+                            name="imageUrl"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Image</FormLabel>
+                                    {
+                                        imageUrl ? (
+                                            <div className="relative">
+                                                <div className="w-full aspect-square relative max-h-[100px]">
+                                                    <Image src={imageUrl} alt="Doctor Image" fill className="object-contain" />
+                                                </div>
+                                                <Button disabled={isPending || isPendingWithImage} type="button" variant="destructive" size="icon" onClick={() => setImageUrl(null)} className="absolute top-0 right-0">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <FormControl>
+                                                <FileUpload
+                                                    title="Upload Image"
+                                                    acceptedFileTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                                    multiple={false}
+                                                    maxSizeInMB={5}
+                                                    onUploadComplete={field.onChange}
+                                                />
+                                            </FormControl>
+                                        )
+                                    }
+                                </FormItem>
+                            )}
+                        />
+
                         <LoadingButton
-                            isLoading={isPending}
+                            isLoading={isPending || isPendingWithImage}
                             title="Create"
                             loadingTitle="Creating..."
                             onClick={form.handleSubmit(onSubmit)}

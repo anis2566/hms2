@@ -9,6 +9,7 @@ import {
     Pill,
     SquareStack,
     Ambulance,
+    Calendar,
 } from "lucide-react";
 
 type Submenu = {
@@ -137,6 +138,26 @@ export function getAdminMenuList(pathname: string): Group[] {
                             label: "Manufacturers",
                             active: pathname === "/dashboard/medicines/manufacturers",
                             icon: Ambulance,
+                        },
+                    ],
+                },
+                {
+                    href: "",
+                    label: "Appointments",
+                    active: pathname.includes("/dashboard/appointments"),
+                    icon: Calendar,
+                    submenus: [
+                        {
+                            href: "/dashboard/appointments/new",
+                            label: "New",
+                            active: pathname === "/dashboard/appointments/new",
+                            icon: PlusCircle,
+                        },
+                        {
+                            href: "/dashboard/appointments",
+                            label: "List",
+                            active: pathname === "/dashboard/appointments",
+                            icon: List,
                         },
                     ],
                 },

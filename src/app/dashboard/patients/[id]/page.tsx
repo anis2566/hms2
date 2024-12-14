@@ -7,6 +7,7 @@ import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { db } from "@/lib/db";
+import { MedicalRecords } from "@/features/dashboard/patients/components/medical-records";
 
 export const metadata: Metadata = {
     title: "Dashboard | Patient",
@@ -29,7 +30,7 @@ const PatientPage = async ({ params }: Props) => {
     if (!patient) redirect("/dashboard/patients")
 
     return (
-        <div>
+        <div className="space-y-6">
             <TooltipProvider delayDuration={0}>
                 <Tooltip>
                     <TooltipTrigger asChild>
@@ -45,6 +46,8 @@ const PatientPage = async ({ params }: Props) => {
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>
+
+            <MedicalRecords patientId={id} />
         </div>
     );
 }

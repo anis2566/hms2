@@ -7,8 +7,14 @@ export const metadata: Metadata = {
     description: "Add a new medical record for a patient",
 };
 
-const NewMedicalRecord = () => {
-    return <MedicalRecordForm />;
+interface Props {
+    params: Promise<{ id: string }>
+}
+
+
+const NewMedicalRecord = async ({ params }: Props) => {
+    const { id } = (await params)
+    return <MedicalRecordForm patientId={id} />;
 };
 
 export default NewMedicalRecord;

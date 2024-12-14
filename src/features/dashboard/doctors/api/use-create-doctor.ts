@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 import { client } from "@/lib/rpc";
 
-type RequestType = InferRequestType<typeof client.api.doctors.$post>["json"];
+type RequestType = InferRequestType<typeof client.api.doctors.$post>["form"];
 type ResponseType = InferResponseType<typeof client.api.doctors.$post>;
 
 export const useCreateDoctor = () => {
@@ -14,8 +14,12 @@ export const useCreateDoctor = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
-    mutationFn: async (json) => {
-      const res = await client.api.doctors.$post({ json });
+    mutationFn: async (form) => {
+      const res = await client.api.doctors.$post({
+        form: {
+          ...form,
+        },
+      });
       return await res.json();
     },
     onSuccess: (data) => {

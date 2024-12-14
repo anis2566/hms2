@@ -3,19 +3,20 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 
-import { DoctorSchema } from "../schemas";
+import { DoctorSchema, DoctorSchemaWithoutImage } from "../schemas";
 import { sessionMiddleware, isAdmin } from "@/lib/session-middleware";
 import { db } from "@/lib/db";
 import { ROLE } from "@/constant";
+import { deleteFile, uploadFile } from "@/features/uploader/action";
 
 const app = new Hono()
   .post(
     "/",
-    zValidator("json", DoctorSchema),
+    zValidator("form", DoctorSchema),
     sessionMiddleware,
     isAdmin,
     async (c) => {
-      const data = await c.req.valid("json");
+      const data = await c.req.valid("form");
 
       try {
         const existingUser = await db.user.findUnique({
@@ -46,7 +47,62 @@ const app = new Hono()
         });
 
         return c.json({ success: "Doctor created." });
-      } catch {
+      } catch (error) {
+        console.log(error);
+        return c.json({ error: "Internal Server Error" }, 500);
+      }
+    }
+  )
+  .post(
+    "/withImage",
+    zValidator("form", DoctorSchemaWithoutImage),
+    sessionMiddleware,
+    isAdmin,
+    async (c) => {
+      const data = await c.req.valid("form");
+
+      try {
+        const existingUser = await db.user.findUnique({
+          where: { email: data.email },
+        });
+
+        if (existingUser) {
+          return c.json({ error: "User already exists" }, 400);
+        }
+
+        let imageUrl = null;
+        if (data.imageUrl) {
+          imageUrl = await uploadFile({
+            file: data.imageUrl,
+            path: "doctors",
+            name: data.name,
+            extension: "png",
+          });
+        }
+
+        const hashedPassword = await bcrypt.hash(data.password, 10);
+
+        await db.$transaction(async (tx) => {
+          const user = await tx.user.create({
+            data: {
+              email: data.email,
+              password: hashedPassword,
+              role: ROLE.DOCTOR,
+            },
+          });
+
+          await tx.doctor.create({
+            data: {
+              ...data,
+              imageUrl,
+              userId: user.id,
+            },
+          });
+        });
+
+        return c.json({ success: "Doctor created." });
+      } catch (error) {
+        console.log(error);
         return c.json({ error: "Internal Server Error" }, 500);
       }
     }
@@ -56,10 +112,10 @@ const app = new Hono()
     sessionMiddleware,
     isAdmin,
     zValidator("param", z.object({ id: z.string() })),
-    zValidator("json", DoctorSchema),
+    zValidator("form", DoctorSchema),
     async (c) => {
       const id = await c.req.param("id");
-      const data = await c.req.valid("json");
+      const data = await c.req.valid("form");
 
       try {
         const doctor = await db.doctor.findUnique({
@@ -72,7 +128,52 @@ const app = new Hono()
 
         await db.doctor.update({
           where: { id },
-          data: { ...data },
+          data: {
+            ...data,
+          },
+        });
+
+        return c.json({ success: "Doctor edited" }, 200);
+      } catch {
+        return c.json({ error: "Failed to edit doctor" }, 500);
+      }
+    }
+  )
+  .put(
+    "/edit/withImage/:id",
+    sessionMiddleware,
+    isAdmin,
+    zValidator("param", z.object({ id: z.string() })),
+    zValidator("form", DoctorSchemaWithoutImage),
+    async (c) => {
+      const id = await c.req.param("id");
+      const data = await c.req.valid("form");
+
+      try {
+        const doctor = await db.doctor.findUnique({
+          where: { id },
+        });
+
+        if (!doctor) {
+          return c.json({ error: "Doctor not found" }, 404);
+        }
+
+        let imageUrl = null;
+        if (data.imageUrl) {
+          imageUrl = await uploadFile({
+            file: data.imageUrl,
+            path: "doctors",
+            name: data.name,
+            extension: "png",
+          });
+        }
+
+        await db.doctor.update({
+          where: { id },
+          data: {
+            ...data,
+            imageUrl: imageUrl || doctor.imageUrl,
+          },
         });
 
         return c.json({ success: "Doctor edited" }, 200);
@@ -94,6 +195,10 @@ const app = new Hono()
 
         if (!doctor) {
           return c.json({ error: "Doctor not found" }, 404);
+        }
+
+        if (doctor.imageUrl) {
+          await deleteFile({ fileName: doctor.imageUrl });
         }
 
         await db.doctor.delete({ where: { id } });
@@ -129,7 +234,7 @@ const app = new Hono()
             ...(title && { title: { equals: title } }),
           },
           orderBy: {
-            ...(sort === "desc" ? { createdAt: "desc" } : { createdAt: "asc" }),
+            ...(sort === "asc" ? { createdAt: "asc" } : { createdAt: "desc" }),
           },
           skip: (pageNumber - 1) * limitNumber,
           take: limitNumber,

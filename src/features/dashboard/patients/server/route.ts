@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 
-import { PatientSchema } from "../schemas";
+import { MedicalRecordSchema, PatientSchema } from "../schemas";
 import { sessionMiddleware, isAdmin } from "@/lib/session-middleware";
 import { db } from "@/lib/db";
 
@@ -129,7 +129,7 @@ const app = new Hono()
             }),
           },
           orderBy: {
-            ...(sort === "desc" ? { createdAt: "desc" } : { createdAt: "asc" }),
+            ...(sort === "asc" ? { createdAt: "asc" } : { createdAt: "desc" }),
           },
           skip: (pageNumber - 1) * limitNumber,
           take: limitNumber,
@@ -149,6 +149,128 @@ const app = new Hono()
       ]);
 
       return c.json({ patients, totalCount });
+    }
+  )
+  .get("/doctorsForSelect", sessionMiddleware, isAdmin, async (c) => {
+    const doctors = await db.doctor.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+    return c.json({ doctors });
+  })
+  .get("/treatmentsForSelect", sessionMiddleware, isAdmin, async (c) => {
+    const treatments = await db.treatment.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+    return c.json({ treatments });
+  })
+  .get("/medicinesForSelect", sessionMiddleware, isAdmin, async (c) => {
+    const medicines = await db.medicine.findMany({
+      select: {
+        id: true,
+        name: true,
+        price: true,
+      },
+    });
+    return c.json({ medicines });
+  })
+  .post(
+    "/medicalRecord",
+    sessionMiddleware,
+    isAdmin,
+    zValidator("json", MedicalRecordSchema),
+    async (c) => {
+      const body = await c.req.valid("json");
+      try {
+        const record = await db.medicalRecord.create({
+          data: {
+            complains: body.complains,
+            diagnosis: body.diagnosis,
+            vitalSigns: body.vitalSigns,
+            doctorId: body.doctorId,
+            patientId: body.patientId,
+            treatments: {
+              create: body.treatments.map((treatment) => ({
+                treatmentId: treatment,
+              })),
+            },
+            medicines: {
+              createMany: {
+                data: body.medicines.map((medicine) => ({
+                  frequency: medicine.frequency,
+                  instruction: medicine.instruction,
+                  quantity: medicine.quantity,
+                  dosageQuantity: medicine.dosageQuantity,
+                  dosage: medicine.dosage,
+                  medicineId: medicine.medicineId,
+                })),
+              },
+            },
+          },
+        });
+        return c.json({
+          success: "Medical record created",
+          id: record.patientId,
+        });
+      } catch (error) {
+        console.log(error);
+        return c.json({ error: "Internal Server Error" }, 500);
+      }
+    }
+  )
+  .get(
+    "/medicalRecords/:patientId",
+    sessionMiddleware,
+    isAdmin,
+    zValidator("param", z.object({ patientId: z.string() })),
+    zValidator("query", z.object({ page: z.string().optional() })),
+    async (c) => {
+      const patientId = await c.req.param("patientId");
+      const { page } = await c.req.valid("query");
+
+      const pageNumber = parseInt(page || "1");
+      const limitNumber = 3;
+
+      const [medicalRecords, totalCount] = await Promise.all([
+        db.medicalRecord.findMany({
+          where: { patientId },
+          include: {
+            treatments: {
+              include: {
+                treatment: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+            medicines: {
+              include: {
+                medicine: {
+                  select: {
+                    name: true,
+                    price: true,
+                  },
+                },
+              },
+            },
+          },
+          skip: (pageNumber - 1) * limitNumber,
+          take: limitNumber,
+          orderBy: {
+            createdAt: "desc",
+          },
+        }),
+        db.medicalRecord.count({
+          where: { patientId },
+        }),
+      ]);
+      return c.json({ medicalRecords, totalCount });
     }
   );
 

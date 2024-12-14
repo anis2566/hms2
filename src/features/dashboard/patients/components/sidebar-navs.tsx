@@ -22,7 +22,7 @@ export const SidebarNavs = ({ patientId }: Props) => {
                     : pathname.includes(nav.href);
                 return (
                     <Link
-                        href={`/dashboard/patient/${patientId}${nav.href}`}
+                        href={`/dashboard/patients/${patientId}${nav.href}`}
                         key={index}
                         className={cn(
                             buttonVariants({ variant: "ghost" }),

@@ -6,10 +6,12 @@ import { db } from "@/lib/db";
 import {
   GenericSchema,
   ManufacturerSchema,
+  ManufacturerSchemaWithImage,
   MedicineSchema,
 } from "@/features/dashboard/medicines/schemas";
 import { isAdmin } from "@/lib/session-middleware";
 import { sessionMiddleware } from "@/lib/session-middleware";
+import { deleteFile, uploadFile } from "@/features/uploader/action";
 
 const app = new Hono()
   .post(
@@ -125,7 +127,7 @@ const app = new Hono()
             },
           },
           orderBy: {
-            ...(sort === "desc" ? { createdAt: "desc" } : { createdAt: "asc" }),
+            ...(sort === "asc" ? { createdAt: "asc" } : { createdAt: "desc" }),
           },
           skip: (pageNumber - 1) * limitNumber,
           take: limitNumber,
@@ -146,11 +148,11 @@ const app = new Hono()
   })
   .post(
     "/manufacturers/create",
-    zValidator("json", ManufacturerSchema),
+    zValidator("form", ManufacturerSchema),
     sessionMiddleware,
     isAdmin,
     async (c) => {
-      const data = await c.req.valid("json");
+      const data = await c.req.valid("form");
 
       try {
         const manufacturer = await db.medicineManufacturer.findFirst({
@@ -169,7 +171,50 @@ const app = new Hono()
           },
         });
         return c.json({ success: "Manufacturer created." });
-      } catch {
+      } catch (error) {
+        console.log(error);
+        return c.json({ error: "Internal Server Error" }, 500);
+      }
+    }
+  )
+  .post(
+    "/manufacturers/create/withImage",
+    zValidator("form", ManufacturerSchemaWithImage),
+    sessionMiddleware,
+    isAdmin,
+    async (c) => {
+      const data = await c.req.valid("form");
+
+      try {
+        const manufacturer = await db.medicineManufacturer.findFirst({
+          where: {
+            name: data.name,
+          },
+        });
+
+        let imageUrl = null;
+        if (data.imageUrl) {
+          imageUrl = await uploadFile({
+            file: data.imageUrl,
+            path: "manufacturers",
+            name: data.name,
+            extension: "png",
+          });
+        }
+
+        if (manufacturer) {
+          return c.json({ error: "Manufacturer already exists" }, 400);
+        }
+
+        await db.medicineManufacturer.create({
+          data: {
+            ...data,
+            imageUrl: imageUrl,
+          },
+        });
+        return c.json({ success: "Manufacturer created." });
+      } catch (error) {
+        console.log(error);
         return c.json({ error: "Internal Server Error" }, 500);
       }
     }
@@ -179,10 +224,10 @@ const app = new Hono()
     sessionMiddleware,
     isAdmin,
     zValidator("param", z.object({ id: z.string() })),
-    zValidator("json", ManufacturerSchema),
+    zValidator("form", ManufacturerSchema),
     async (c) => {
       const id = await c.req.param("id");
-      const data = await c.req.valid("json");
+      const data = await c.req.valid("form");
 
       try {
         const manufacturer = await db.medicineManufacturer.findUnique({
@@ -195,7 +240,98 @@ const app = new Hono()
 
         await db.medicineManufacturer.update({
           where: { id },
-          data: { ...data },
+          data: {
+            name: data.name,
+            description: data.description,
+          },
+        });
+
+        return c.json({ success: "Manufacturer edited" }, 200);
+      } catch {
+        return c.json({ error: "Failed to edit manufacturer" }, 500);
+      }
+    }
+  )
+  .put(
+    "/manufacturers/edit/withImage/:id",
+    sessionMiddleware,
+    isAdmin,
+    zValidator("param", z.object({ id: z.string() })),
+    zValidator("form", ManufacturerSchemaWithImage),
+    async (c) => {
+      const id = await c.req.param("id");
+      const data = await c.req.valid("form");
+
+      try {
+        const manufacturer = await db.medicineManufacturer.findUnique({
+          where: { id },
+        });
+
+        if (!manufacturer) {
+          return c.json({ error: "Manufacturer not found" }, 404);
+        }
+
+        let imageUrl = null;
+        if (data.imageUrl) {
+          imageUrl = await uploadFile({
+            file: data.imageUrl,
+            path: "manufacturers",
+            name: data.name,
+            extension: "png",
+          });
+        }
+
+        await db.medicineManufacturer.update({
+          where: { id },
+          data: {
+            name: data.name,
+            description: data.description,
+            imageUrl: imageUrl ? imageUrl : manufacturer.imageUrl,
+          },
+        });
+
+        return c.json({ success: "Manufacturer edited" }, 200);
+      } catch {
+        return c.json({ error: "Failed to edit manufacturer" }, 500);
+      }
+    }
+  )
+  .put(
+    "/manufacturers/edit/withImage/:id",
+    sessionMiddleware,
+    isAdmin,
+    zValidator("param", z.object({ id: z.string() })),
+    zValidator("form", ManufacturerSchemaWithImage),
+    async (c) => {
+      const id = await c.req.param("id");
+      const data = await c.req.valid("form");
+
+      try {
+        const manufacturer = await db.medicineManufacturer.findUnique({
+          where: { id },
+        });
+
+        if (!manufacturer) {
+          return c.json({ error: "Manufacturer not found" }, 404);
+        }
+
+        let imageUrl = null;
+        if (data.imageUrl) {
+          imageUrl = await uploadFile({
+            file: data.imageUrl,
+            path: "manufacturers",
+            name: data.name,
+            extension: "png",
+          });
+        }
+
+        await db.medicineManufacturer.update({
+          where: { id },
+          data: {
+            name: data.name,
+            description: data.description,
+            imageUrl: imageUrl ? imageUrl : manufacturer.imageUrl,
+          },
         });
 
         return c.json({ success: "Manufacturer edited" }, 200);
@@ -221,10 +357,17 @@ const app = new Hono()
           return c.json({ error: "Manufacturer not found" }, 404);
         }
 
+        if (manufacturer.imageUrl) {
+          await deleteFile({
+            fileName: manufacturer.imageUrl,
+          });
+        }
+
         await db.medicineManufacturer.delete({ where: { id } });
 
         return c.json({ success: "Manufacturer deleted" }, 200);
-      } catch {
+      } catch (error) {
+        console.log(error);
         return c.json({ error: "Failed to delete manufacturer" }, 500);
       }
     }
@@ -259,7 +402,7 @@ const app = new Hono()
             },
           },
           orderBy: {
-            ...(sort === "desc" ? { createdAt: "desc" } : { createdAt: "asc" }),
+            ...(sort === "asc" ? { createdAt: "asc" } : { createdAt: "desc" }),
           },
           skip: (pageNumber - 1) * limitNumber,
           take: limitNumber,
@@ -391,7 +534,7 @@ const app = new Hono()
             manufacturer: true,
           },
           orderBy: {
-            ...(sort === "desc" ? { createdAt: "desc" } : { createdAt: "asc" }),
+            ...(sort === "asc" ? { createdAt: "asc" } : { createdAt: "desc" }),
           },
           skip: (pageNumber - 1) * limitNumber,
           take: limitNumber,

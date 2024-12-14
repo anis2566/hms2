@@ -113,7 +113,7 @@ const app = new Hono()
             ...(query && { name: { contains: query, mode: "insensitive" } }),
           },
           orderBy: {
-            ...(sort === "desc" ? { createdAt: "desc" } : { createdAt: "asc" }),
+            ...(sort === "asc" ? { createdAt: "asc" } : { createdAt: "desc" }),
           },
           skip: (pageNumber - 1) * limitNumber,
           take: limitNumber,
