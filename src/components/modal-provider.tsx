@@ -11,6 +11,7 @@ import { DeleteManufacturerModal } from "@/features/dashboard/medicines/componen
 import { DeleteMedicineModal } from "@/features/dashboard/medicines/components/delete-modal"
 import { DeleteDoctorModal } from "@/features/dashboard/doctors/components/delete-modal"
 import { AddMedicineModal } from "@/features/dashboard/patients/components/add-medicine-modal"
+import { DeleteServiceModal } from "@/features/dashboard/services/components/delete-modal"
 
 export const ModalProvider = () => {
     return (
@@ -26,6 +27,7 @@ export const ModalProvider = () => {
             <DeleteMedicineModal />
             <DeleteDoctorModal />
             <AddMedicineModal />
+            <DeleteServiceModal />
         </>
     )
 }

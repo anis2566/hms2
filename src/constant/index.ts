@@ -78,6 +78,23 @@ export enum MEDICINE_DOSAGE {
   EVENING = "Evening (E)",
 }
 
+export enum PAYMENT_METHOD {
+  CASH = "Cash",
+  BANK_TRANSFER = "Bank_Transfer",
+  CARD = "Card",
+}
+
+export enum PAYMENT_STATUS {
+  PENDING = "Pending",
+  PAID = "Paid",
+  CANCELLED = "Cancelled",
+}
+
+export enum SERVICE_STATUS {
+  ENABLED = "Enabled",
+  DISABLED = "Disabled",
+}
+
 type PatientSidebarNavs = {
   href: string;
   label: string;

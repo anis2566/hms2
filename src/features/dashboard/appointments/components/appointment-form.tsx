@@ -107,6 +107,24 @@ export const AppointmentForm = () => {
                             )}
                         />
 
+                        <FormField
+                            control={form.control}
+                            name="endTime"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>End Time</FormLabel>
+                                    <FormControl>
+                                        <SimpleTimePicker
+                                            value={field.value || new Date()}
+                                            onChange={field.onChange}
+                                            use12HourFormat={true}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
                         <LoadingButton
                             type="submit"
                             title="Submit"

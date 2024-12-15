@@ -269,21 +269,6 @@ export function SimpleTimePicker({
                                 ))}
                             </div>
                         </ScrollArea>
-                        <ScrollArea className="h-full flex-grow">
-                            <div className="flex grow flex-col items-stretch overflow-y-auto pe-2 pb-48">
-                                {seconds.map((v) => (
-                                    <div ref={v.value === second ? secondRef : undefined} key={v.value}>
-                                        <TimeItem
-                                            option={v}
-                                            selected={v.value === second}
-                                            onSelect={(v) => setSecond(v.value)}
-                                            className="h-8"
-                                            disabled={v.disabled}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </ScrollArea>
                         {use12HourFormat && (
                             <ScrollArea className="h-full flex-grow">
                                 <div className="flex grow flex-col items-stretch overflow-y-auto pe-2">

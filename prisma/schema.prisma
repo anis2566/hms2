@@ -100,6 +100,7 @@ model Patient {
 
   medicalRecords MedicalRecord[]
   appointments Appointment[]
+  payments Payment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -255,6 +256,32 @@ model Appointment {
 
   doctorId String @db.ObjectId
   doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Payment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  amount    Int
+  method    String
+  status    String @default("Pending")
+
+  patientId String @db.ObjectId
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Service {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  description String?
+  price Int
+  status    String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

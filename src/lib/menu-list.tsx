@@ -10,6 +10,8 @@ import {
     SquareStack,
     Ambulance,
     Calendar,
+    DollarSign,
+    Dessert,
 } from "lucide-react";
 
 type Submenu = {
@@ -157,6 +159,46 @@ export function getAdminMenuList(pathname: string): Group[] {
                             href: "/dashboard/appointments",
                             label: "List",
                             active: pathname === "/dashboard/appointments",
+                            icon: List,
+                        },
+                    ],
+                },
+                {
+                    href: "",
+                    label: "Payments",
+                    active: pathname.includes("/dashboard/payments"),
+                    icon: DollarSign,
+                    submenus: [
+                        {
+                            href: "/dashboard/payments/new",
+                            label: "New",
+                            active: pathname === "/dashboard/payments/new",
+                            icon: PlusCircle,
+                        },
+                        {
+                            href: "/dashboard/payments",
+                            label: "List",
+                            active: pathname === "/dashboard/payments",
+                            icon: List,
+                        },
+                    ],
+                },
+                {
+                    href: "",
+                    label: "Services",
+                    active: pathname.includes("/dashboard/services"),
+                    icon: Dessert,
+                    submenus: [
+                        {
+                            href: "/dashboard/services/new",
+                            label: "New",
+                            active: pathname === "/dashboard/services/new",
+                            icon: PlusCircle,
+                        },
+                        {
+                            href: "/dashboard/services",
+                            label: "List",
+                            active: pathname === "/dashboard/services",
                             icon: List,
                         },
                     ],

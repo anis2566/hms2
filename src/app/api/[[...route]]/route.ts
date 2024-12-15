@@ -7,6 +7,7 @@ import patientRouter from "@/features/dashboard/patients/server/route";
 import doctorRouter from "@/features/dashboard/doctors/server/route";
 import treatmentRouter from "@/features/dashboard/treatments/server/route";
 import medicineRouter from "@/features/dashboard/medicines/server/route";
+import serviceRouter from "@/features/dashboard/services/server/route";
 
 const app = new Hono()
   .basePath("/api")
@@ -15,7 +16,8 @@ const app = new Hono()
   .route("/patients", patientRouter)
   .route("/doctors", doctorRouter)
   .route("/treatments", treatmentRouter)
-  .route("/medicines", medicineRouter);
+  .route("/medicines", medicineRouter)
+  .route("/services", serviceRouter);
 
 export const GET = handle(app);
 export const POST = handle(app);
