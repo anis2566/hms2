@@ -10,27 +10,30 @@ import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { TimePicker } from "@/components/ui/time-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-import { AppointmentSchema, AppointmentSchemaType } from "../schemas";
 import { LoadingButton } from "@/components/loading-button";
 import { useGetDoctorsForSelect } from "../../patients/api/use-get-doctors-for-select";
-import { useGetServicesForSelect } from "../api/use-get-services-for-select";
-import { useGetPatientsForSelect } from "../api/use-get-patients-for-select";
 import { APPOINTMENT_STATUS } from "@/constant";
-import { useCreateAppointment } from "../api/use-create-appointment";
+import { useGetServicesForSelect } from "../../appointments/api/use-get-services-for-select";
+import { AppointmentSchema } from "../../appointments/schemas";
+import { AppointmentSchemaType } from "../../appointments/schemas";
+import { useCreateAppointment } from "../../appointments/api/use-create-appointment";
 
-export const AppointmentForm = () => {
+interface AppointmentFormProps {
+    patientId: string;
+}
+
+export const AppointmentForm = ({ patientId }: AppointmentFormProps) => {
     const { data: services, isLoading: isServicesLoading } = useGetServicesForSelect();
-    const { data: patients, isLoading: isPatientsLoading } = useGetPatientsForSelect();
     const { data, isLoading: isDoctorsLoading } = useGetDoctorsForSelect();
 
-    const { mutate: createAppointment, isPending } = useCreateAppointment({ redirectUrl: undefined })
+    const { mutate: createAppointment, isPending } = useCreateAppointment({ redirectUrl: `/dashboard/patients/${patientId}/appointments` })
 
     const form = useForm<AppointmentSchemaType>({
         resolver: zodResolver(AppointmentSchema),
         defaultValues: {
             purpose: "",
             description: "",
-            patientId: "",
+            patientId,
             doctorId: "",
             date: new Date(),
             startTime: new Date(),
@@ -59,29 +62,6 @@ export const AppointmentForm = () => {
             <CardContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-2 items-center gap-6">
-                        <FormField
-                            control={form.control}
-                            name="patientId"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Patient</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isPatientsLoading || isPending}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select a patient" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {patients?.patients.map((patient) => (
-                                                <SelectItem key={patient.id} value={patient.id}>{patient.name}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
                         <FormField
                             control={form.control}
                             name="purpose"

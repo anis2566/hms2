@@ -2,9 +2,15 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 
-import { MedicalRecordSchema, PatientSchema } from "../schemas";
+import {
+  MedicalRecordSchema,
+  PatientSchema,
+  PatientWithImageSchema,
+} from "../schemas";
 import { sessionMiddleware, isAdmin } from "@/lib/session-middleware";
 import { db } from "@/lib/db";
+import { uploadFile } from "@/features/uploader/action";
+import { revalidatePath } from "next/cache";
 
 const app = new Hono()
   .post(
@@ -54,6 +60,51 @@ const app = new Hono()
           where: { id },
           data: { ...data },
         });
+
+        return c.json({ success: "Patient edited" }, 200);
+      } catch {
+        return c.json({ error: "Failed to edit patient" }, 500);
+      }
+    }
+  )
+  .put(
+    "/edit/withImage/:id",
+    sessionMiddleware,
+    isAdmin,
+    zValidator("param", z.object({ id: z.string() })),
+    zValidator("form", PatientWithImageSchema),
+    async (c) => {
+      const id = await c.req.param("id");
+      const data = await c.req.valid("form");
+
+      try {
+        const patient = await db.patient.findUnique({
+          where: { id },
+        });
+
+        if (!patient) {
+          return c.json({ error: "Patient not found" }, 404);
+        }
+
+        let imageUrl = null;
+        if (data.imageUrl) {
+          imageUrl = await uploadFile({
+            file: data.imageUrl,
+            path: "patients",
+            name: id,
+            extension: "png",
+          });
+        }
+
+        await db.patient.update({
+          where: { id },
+          data: {
+            ...data,
+            imageUrl,
+          },
+        });
+
+        revalidatePath(`/dashboard/patients/${id}`);
 
         return c.json({ success: "Patient edited" }, 200);
       } catch {
@@ -271,6 +322,52 @@ const app = new Hono()
         }),
       ]);
       return c.json({ medicalRecords, totalCount });
+    }
+  )
+  .get(
+    "/appointments/:patientId",
+    sessionMiddleware,
+    isAdmin,
+    zValidator("param", z.object({ patientId: z.string() })),
+    zValidator(
+      "query",
+      z.object({
+        page: z.string().optional(),
+        limit: z.string().optional(),
+        sort: z.string().optional(),
+      })
+    ),
+    async (c) => {
+      const patientId = await c.req.param("patientId");
+      const { page, limit, sort } = await c.req.valid("query");
+
+      const pageNumber = parseInt(page || "1");
+      const limitNumber = parseInt(limit || "5");
+
+      const [appointments, totalCount] = await Promise.all([
+        db.appointment.findMany({
+          where: { patientId },
+          include: {
+            doctor: {
+              select: {
+                id: true,
+                name: true,
+                imageUrl: true,
+                phone: true,
+              },
+            },
+          },
+          skip: (pageNumber - 1) * limitNumber,
+          take: limitNumber,
+          orderBy: {
+            ...(sort === "asc" ? { createdAt: "asc" } : { createdAt: "desc" }),
+          },
+        }),
+        db.appointment.count({
+          where: { patientId },
+        }),
+      ]);
+      return c.json({ appointments, totalCount });
     }
   );
 

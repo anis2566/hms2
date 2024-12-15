@@ -98,9 +98,27 @@ model Patient {
   emergencyContact String
   bloodGroup String?
 
+  health    PatientHealth?
+
   medicalRecords MedicalRecord[]
   appointments Appointment[]
   payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PatientHealth {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  bloodGroup String
+  height     Int
+  weight     Int
+  allergies  String?
+  habits   String?
+  medicalHistory String?
+
+  patientId String @db.ObjectId @unique
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

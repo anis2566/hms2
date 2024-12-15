@@ -129,7 +129,7 @@ export const patientSidebarNavs: PatientSidebarNavs[] = [
     icon: GalleryVertical,
   },
   {
-    href: "/",
+    href: "/profile",
     label: "Personal Information",
     icon: User,
     isHome: true,

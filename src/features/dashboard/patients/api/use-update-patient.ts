@@ -12,7 +12,11 @@ type ResponseType = InferResponseType<
   (typeof client.api.patients.edit)[":id"]["$put"]
 >;
 
-export const useUpdatePatient = () => {
+interface Props {
+  redirectUrl?: string;
+}
+
+export const useUpdatePatient = ({ redirectUrl }: Props) => {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -30,7 +34,11 @@ export const useUpdatePatient = () => {
           duration: 5000,
         });
         queryClient.invalidateQueries({ queryKey: ["patients"] });
-        router.push("/dashboard/patients");
+        if (redirectUrl) {
+          router.push(redirectUrl);
+        } else {
+          router.refresh()
+        }
       }
 
       if ("error" in data) {

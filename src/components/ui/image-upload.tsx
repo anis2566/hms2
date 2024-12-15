@@ -51,10 +51,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onUploadComplete, multiple = 
                         </div>
 
                         <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                            <span className="font-semibold">Drag an image</span>
-                        </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-400">
-                            Select a image
+                            <span className="font-semibold">Select an image</span>
                         </p>
                     </div>
                 </label>

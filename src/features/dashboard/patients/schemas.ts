@@ -27,6 +27,27 @@ export const PatientSchema = z.object({
 
 export type PatientSchemaType = z.infer<typeof PatientSchema>;
 
+export const PatientWithImageSchema = z.object({
+  name: requiredString.min(3, { message: "invalid name" }),
+  email: requiredString.email({ message: "invalid email" }).optional(),
+  gender: z
+    .nativeEnum(GENDER)
+    .refine((value) => Object.values(GENDER).includes(value), {
+      message: "required",
+    }),
+  phone: requiredString.min(11, { message: "invalid phone number" }),
+  address: requiredString.min(6, { message: "invalid address" }),
+  dob: requiredString,
+  emergencyContact: requiredString.min(11, { message: "invalid phone number" }),
+  imageUrl: z
+    .instanceof(File)
+    .refine((file) => file.size > 0, { message: "A valid file is required" })
+    .optional(),
+  bloodGroup: z.nativeEnum(BLOOD_GROUP).optional(),
+});
+
+export type PatientaWithImageSchemType = z.infer<typeof PatientWithImageSchema>;
+
 export const MedicalRecordMedicineSchema = z.object({
   instruction: z
     .nativeEnum(MEDICINE_INSTRUCTION)
