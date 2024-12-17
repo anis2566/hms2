@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import {
   MedicalRecordSchema,
+  PatientHealthSchema,
   PatientSchema,
   PatientWithImageSchema,
 } from "../schemas";
@@ -238,6 +239,13 @@ const app = new Hono()
     async (c) => {
       const body = await c.req.valid("json");
       try {
+        const patient = await db.patient.findUnique({
+          where: { id: body.patientId },
+        });
+        if (!patient) {
+          return c.json({ error: "Patient not found" }, 404);
+        }
+
         const record = await db.medicalRecord.create({
           data: {
             complains: body.complains,
@@ -264,6 +272,7 @@ const app = new Hono()
             },
           },
         });
+
         return c.json({
           success: "Medical record created",
           id: record.patientId,
@@ -368,6 +377,40 @@ const app = new Hono()
         }),
       ]);
       return c.json({ appointments, totalCount });
+    }
+  )
+  .post(
+    "/health",
+    sessionMiddleware,
+    isAdmin,
+    zValidator("json", PatientHealthSchema),
+    async (c) => {
+      const body = await c.req.valid("json");
+      try {
+        const patient = await db.patient.findUnique({
+          where: { id: body.patientId },
+        });
+        if (!patient) {
+          return c.json({ error: "Patient not found" }, 404);
+        }
+
+        await db.patientHealth.upsert({
+          where: { patientId: patient.id },
+          create: {
+            ...body,
+          },
+          update: {
+            ...body,
+          },
+        });
+
+        return c.json({
+          success: "Patient health updated",
+        });
+      } catch (error) {
+        console.log(error);
+        return c.json({ error: "Internal Server Error" }, 500);
+      }
     }
   );
 

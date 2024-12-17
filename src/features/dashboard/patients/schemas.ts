@@ -83,3 +83,19 @@ export const MedicalRecordSchema = z.object({
 });
 
 export type MedicalRecordSchemaType = z.infer<typeof MedicalRecordSchema>;
+
+export const PatientHealthSchema = z.object({
+  bloodGroup: z
+    .nativeEnum(BLOOD_GROUP)
+    .refine((value) => Object.values(BLOOD_GROUP).includes(value), {
+      message: "required",
+    }),
+  height: z.number(),
+  weight: z.number(),
+  allergies: z.string().optional(),
+  habits: z.string().optional(),
+  medicalHistory: z.string().optional(),
+  patientId: requiredString,
+});
+
+export type PatientHealthSchemaType = z.infer<typeof PatientHealthSchema>;

@@ -28,7 +28,7 @@ export const AppointmentForm = () => {
     const form = useForm<AppointmentSchemaType>({
         resolver: zodResolver(AppointmentSchema),
         defaultValues: {
-            purpose: "",
+            serviceId: "",
             description: "",
             patientId: "",
             doctorId: "",
@@ -42,9 +42,9 @@ export const AppointmentForm = () => {
     const onSubmit = (data: AppointmentSchemaType) => {
         createAppointment({
             ...data,
-            date: data.date.toDateString(),
-            startTime: data.startTime.toDateString(),
-            endTime: data.endTime.toDateString(),
+            date: data.date.toISOString(),
+            startTime: data.startTime.toISOString(),
+            endTime: data.endTime.toISOString(),
         })
     }
 
@@ -84,7 +84,7 @@ export const AppointmentForm = () => {
 
                         <FormField
                             control={form.control}
-                            name="purpose"
+                            name="serviceId"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Purpose of Appointment</FormLabel>

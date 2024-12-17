@@ -256,8 +256,8 @@ export const PatientForm = () => {
 
             <LoadingButton
               isLoading={isPending}
-              title="Create"
-              loadingTitle="Creating..."
+              title="Update"
+              loadingTitle="Updating..."
               onClick={form.handleSubmit(onSubmit)}
               type="submit"
               icon={Send}

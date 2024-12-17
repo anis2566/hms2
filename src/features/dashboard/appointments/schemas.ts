@@ -5,7 +5,7 @@ import { APPOINTMENT_STATUS } from "@/constant";
 const requiredString = z.string().min(1, { message: "required" });
 
 export const AppointmentSchema = z.object({
-  purpose: requiredString,
+  serviceId: requiredString,
   description: z.string().optional(),
   patientId: requiredString,
   doctorId: requiredString,

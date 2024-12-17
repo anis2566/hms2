@@ -262,12 +262,14 @@ model MedicalRecordMedicine {
 
 model Appointment {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  purpose   String
   description String?
   date      DateTime
   startTime DateTime
   endTime   DateTime
   status    String @default("Pending")
+
+  serviceId String @db.ObjectId
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 
   patientId String @db.ObjectId
   patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
@@ -300,6 +302,8 @@ model Service {
   description String?
   price Int
   status    String
+
+  appointments Appointment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
