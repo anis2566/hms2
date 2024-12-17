@@ -1,6 +1,6 @@
 "use client"
 
-import { MoreVerticalIcon, Eye, Edit, Trash2 } from "lucide-react";
+import { MoreVerticalIcon, Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
 
@@ -15,12 +15,16 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useGetAppointments } from "../api/use-get-appointments";
 import { EmptyStat } from "@/components/empty-stat";
 import { CustomPagination } from "@/components/custom-pagination";
+import { Header } from "./header-appointment";
+import { useAppointmentDelete } from "@/hooks/use-appointment"
 
 interface Props {
     patientId: string
 }
 
 export const AppointmentList = ({ patientId }: Props) => {
+    const { onOpen } = useAppointmentDelete()
+
     const { data, isLoading } = useGetAppointments(patientId)
 
     return (
@@ -30,6 +34,7 @@ export const AppointmentList = ({ patientId }: Props) => {
                 <CardDescription>List of appointments of patient</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+                <Header />
                 {
                     isLoading ? <AppointmentListSkeleton /> : (
                         <Table>
@@ -37,6 +42,7 @@ export const AppointmentList = ({ patientId }: Props) => {
                                 <TableRow className="bg-accent hover:bg-accent/80">
                                     <TableHead>Date</TableHead>
                                     <TableHead>Doctor</TableHead>
+                                    <TableHead>Service</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Time</TableHead>
                                     <TableHead>Action</TableHead>
@@ -58,6 +64,7 @@ export const AppointmentList = ({ patientId }: Props) => {
                                                 </div>
                                             </div>
                                         </TableCell>
+                                        <TableCell>{appointment.service.name}</TableCell>
                                         <TableCell>
                                             <Badge className="rounded-full">
                                                 {appointment.status}
@@ -72,17 +79,13 @@ export const AppointmentList = ({ patientId }: Props) => {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem className="flex items-center gap-x-3">
-                                                        <Eye className="w-5 h-5" />
-                                                        <p>View</p>
-                                                    </DropdownMenuItem>
                                                     <DropdownMenuItem asChild>
                                                         <Link href={`/dashboard/patients/${patientId}/appointments/edit/${appointment.id}`} className="flex items-center gap-x-3">
                                                             <Edit className="w-5 h-5" />
                                                             <p>Edit</p>
                                                         </Link>
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem className="flex items-center gap-x-3 text-rose-500 group">
+                                                    <DropdownMenuItem className="flex items-center gap-x-3 text-rose-500 group" onClick={() => onOpen(appointment.id)}>
                                                         <Trash2 className="w-5 h-5 group-hover:text-rose-600" />
                                                         <p className="group-hover:text-rose-600">Delete</p>
                                                     </DropdownMenuItem>

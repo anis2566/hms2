@@ -97,6 +97,7 @@ model Patient {
   dob       DateTime
   emergencyContact String
   bloodGroup String?
+  images    String[] @default([])
 
   health    PatientHealth?
 

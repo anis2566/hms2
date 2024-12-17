@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Send } from "lucide-react";
+import { Appointment } from "@prisma/client";
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -16,47 +17,50 @@ import { APPOINTMENT_STATUS } from "@/constant";
 import { useGetServicesForSelect } from "../../appointments/api/use-get-services-for-select";
 import { AppointmentSchema } from "../../appointments/schemas";
 import { AppointmentSchemaType } from "../../appointments/schemas";
-import { useCreateAppointment } from "../../appointments/api/use-create-appointment";
+import { useUpdateAppointment } from "../../appointments/api/use-update-appointment";
 
 interface AppointmentFormProps {
-    patientId: string;
+    appointment: Appointment;
 }
 
-export const AppointmentForm = ({ patientId }: AppointmentFormProps) => {
+export const EditAppointmentForm = ({ appointment }: AppointmentFormProps) => {
     const { data: services, isLoading: isServicesLoading } = useGetServicesForSelect();
     const { data, isLoading: isDoctorsLoading } = useGetDoctorsForSelect();
 
-    const { mutate: createAppointment, isPending } = useCreateAppointment({ redirectUrl: `/dashboard/patients/${patientId}/appointments` })
+    const { mutate: updateAppointment, isPending } = useUpdateAppointment({ redirectUrl: `/dashboard/patients/${appointment.patientId}/appointments` })
 
     const form = useForm<AppointmentSchemaType>({
         resolver: zodResolver(AppointmentSchema),
         defaultValues: {
-            serviceId: "",
-            description: "",
-            patientId,
-            doctorId: "",
-            date: new Date(),
-            startTime: new Date(),
-            endTime: new Date(),
-            status: APPOINTMENT_STATUS.PENDING,
+            serviceId: appointment.serviceId,
+            description: appointment.description || "",
+            patientId: appointment.patientId,
+            doctorId: appointment.doctorId,
+            date: appointment.date,
+            startTime: appointment.startTime,
+            endTime: appointment.endTime,
+            status: appointment.status as APPOINTMENT_STATUS,
         },
     });
 
     const onSubmit = (data: AppointmentSchemaType) => {
-        createAppointment({
-            ...data,
-            date: data.date.toDateString(),
-            startTime: data.startTime.toDateString(),
-            endTime: data.endTime.toDateString(),
+        updateAppointment({
+            param: { id: appointment.id },
+            json: {
+                ...data,
+                date: data.date.toISOString(),
+                startTime: data.startTime.toISOString(),
+                endTime: data.endTime.toISOString(),
+            }
         })
     }
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Appointment Form</CardTitle>
+                <CardTitle>Edit Appointment Form</CardTitle>
                 <CardDescription>
-                    Please fill in the form to create a new appointment.
+                    Customize appointment form.
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -190,8 +194,8 @@ export const AppointmentForm = ({ patientId }: AppointmentFormProps) => {
 
                         <LoadingButton
                             type="submit"
-                            title="Submit"
-                            loadingTitle="Submitting..."
+                            title="Update"
+                            loadingTitle="Updating..."
                             isLoading={isPending}
                             onClick={() => form.handleSubmit(onSubmit)}
                             className="max-w-fit"

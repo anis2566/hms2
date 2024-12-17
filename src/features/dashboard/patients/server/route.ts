@@ -113,6 +113,59 @@ const app = new Hono()
       }
     }
   )
+  .put(
+    "/edit/images/:id",
+    sessionMiddleware,
+    isAdmin,
+    zValidator("param", z.object({ id: z.string() })),
+    zValidator(
+      "form",
+      z.object({
+        files: z.array(z.instanceof(File)),
+      })
+    ),
+    async (c) => {
+      const id = await c.req.param("id");
+      const data = await c.req.valid("form");
+
+      try {
+        const patient = await db.patient.findUnique({
+          where: { id },
+        });
+
+        if (!patient) {
+          return c.json({ error: "Patient not found" }, 404);
+        }
+
+        await Promise.all(
+          data.files.map(async (item) => {
+            const randomNumber = Math.floor(100000 + Math.random() * 900000)
+            const imageUrl = await uploadFile({
+              file: item,
+              path: "patients",
+              name: `${id}${randomNumber}`,
+              extension: "png",
+            });
+            await db.patient.update({
+              where: { id },
+              data: {
+                images: {
+                  push: imageUrl,
+                },
+              },
+            });
+          })
+        );
+
+        revalidatePath(`/dashboard/patients/${id}`);
+
+        return c.json({ success: "Patient edited" }, 200);
+      } catch (error) {
+        console.log(error);
+        return c.json({ error: "Failed to edit patient" }, 500);
+      }
+    }
+  )
   .delete(
     "/delete/:id",
     sessionMiddleware,
@@ -283,6 +336,31 @@ const app = new Hono()
       }
     }
   )
+  .delete(
+    "/medicalRecord/delete/:id",
+    sessionMiddleware,
+    isAdmin,
+    zValidator("param", z.object({ id: z.string() })),
+    async (c) => {
+      const id = await c.req.param("id");
+
+      try {
+        const medicalRecord = await db.medicalRecord.findUnique({
+          where: { id },
+        });
+
+        if (!medicalRecord) {
+          return c.json({ error: "Medical Record not found" }, 404);
+        }
+
+        await db.medicalRecord.delete({ where: { id } });
+
+        return c.json({ success: "Medical Record deleted" }, 200);
+      } catch {
+        return c.json({ error: "Failed to delete mediccal record" }, 500);
+      }
+    }
+  )
   .get(
     "/medicalRecords/:patientId",
     sessionMiddleware,
@@ -357,14 +435,9 @@ const app = new Hono()
         db.appointment.findMany({
           where: { patientId },
           include: {
-            doctor: {
-              select: {
-                id: true,
-                name: true,
-                imageUrl: true,
-                phone: true,
-              },
-            },
+            doctor: true,
+            service: true,
+            patient: true,
           },
           skip: (pageNumber - 1) * limitNumber,
           take: limitNumber,

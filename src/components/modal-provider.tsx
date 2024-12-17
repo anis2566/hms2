@@ -13,6 +13,9 @@ import { DeleteDoctorModal } from "@/features/dashboard/doctors/components/delet
 import { AddMedicineModal } from "@/features/dashboard/patients/components/add-medicine-modal"
 import { DeleteServiceModal } from "@/features/dashboard/services/components/delete-modal"
 import { AppointmentViewModal } from "@/features/dashboard/appointments/components/view-modal"
+import { AppointmentStatusModal } from "@/features/dashboard/appointments/components/status-modal"
+import { DeleteAppointmentModal } from "@/features/dashboard/appointments/components/delete-modal"
+import { DeleteMedicalRecordModla } from "@/features/dashboard/patients/components/delete-medical-record-modal"
 
 export const ModalProvider = () => {
     return (
@@ -30,6 +33,9 @@ export const ModalProvider = () => {
             <AddMedicineModal />
             <DeleteServiceModal />
             <AppointmentViewModal />
+            <AppointmentStatusModal />
+            <DeleteAppointmentModal />
+            <DeleteMedicalRecordModla />
         </>
     )
 }

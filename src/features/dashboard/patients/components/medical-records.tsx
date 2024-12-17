@@ -9,12 +9,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import { useGetMedicalRecords } from "../api/use-get-medical-records";
 import { CustomPagination } from "@/components/custom-pagination";
+import { useDeleteMedicalRecord } from "@/hooks/use-medical-record";
 
 interface MedicalRecordsProps {
     patientId: string
 }
 
 export const MedicalRecords = ({ patientId }: MedicalRecordsProps) => {
+    const { onOpen } = useDeleteMedicalRecord()
+
     const { data, isLoading } = useGetMedicalRecords(patientId);
 
     return (
@@ -53,7 +56,7 @@ export const MedicalRecords = ({ patientId }: MedicalRecordsProps) => {
                                     <Button variant="outline" size="icon">
                                         <EyeIcon className="w-4 h-4" />
                                     </Button>
-                                    <Button variant="outline" size="icon">
+                                    <Button variant="outline" size="icon" onClick={() => onOpen(record.id)}>
                                         <TrashIcon className="w-4 h-4 text-red-500" />
                                     </Button>
                                 </div>

@@ -28,10 +28,14 @@ export const AppointmentViewModal = () => {
                                     <Badge variant="outline" className="max-h-fit">{index + 1}</Badge>
 
                                     <div className="space-y-1">
-                                        <div className="flex items-center gap-x-2">
-                                            <User className="w-4 h-4" />
-                                            <p className="text-sm font-medium">{appointment.patient.name}</p>
-                                        </div>
+                                        {
+                                            appointment.patient && (
+                                                <div className="flex items-center gap-x-2">
+                                                    <User className="w-4 h-4" />
+                                                    <p className="text-sm font-medium">{appointment.patient.name}</p>
+                                                </div>
+                                            )
+                                        }
                                         <div className="flex items-center gap-x-2">
                                             <MessageCircle className="w-4 h-4" />
                                             <p className="text-sm font-medium">{appointment.service.name}</p>
