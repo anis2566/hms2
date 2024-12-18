@@ -13,6 +13,29 @@ import { db } from "@/lib/db";
 import { uploadFile } from "@/features/uploader/action";
 import { revalidatePath } from "next/cache";
 
+type Treatment = {
+  treatmentId: string;
+};
+
+type Medicine = {
+  frequency: string;
+  instruction: string;
+  quantity: number;
+  dosageQuantity: number;
+  dosage: string;
+  medicineId: string;
+};
+
+type MedicalRecordRequestBody = {
+  complains: string;
+  diagnosis: string;
+  vitalSigns: string;
+  doctorId: string;
+  patientId: string;
+  treatments?: Treatment[];
+  medicines?: Medicine[];
+};
+
 const app = new Hono()
   .post(
     "/",
@@ -139,7 +162,7 @@ const app = new Hono()
 
         await Promise.all(
           data.files.map(async (item) => {
-            const randomNumber = Math.floor(100000 + Math.random() * 900000)
+            const randomNumber = Math.floor(100000 + Math.random() * 900000);
             const imageUrl = await uploadFile({
               file: item,
               path: "patients",
@@ -299,32 +322,38 @@ const app = new Hono()
           return c.json({ error: "Patient not found" }, 404);
         }
 
-        const record = await db.medicalRecord.create({
-          data: {
-            complains: body.complains,
-            diagnosis: body.diagnosis,
-            vitalSigns: body.vitalSigns,
-            doctorId: body.doctorId,
-            patientId: body.patientId,
-            treatments: {
-              create: body.treatments.map((treatment) => ({
-                treatmentId: treatment,
+        const data: any = {
+          complains: body.complains,
+          diagnosis: body.diagnosis,
+          vitalSigns: body.vitalSigns,
+          doctorId: body.doctorId,
+          patientId: body.patientId,
+        };
+
+        if (body.treatments && body.treatments.length > 0) {
+          data.treatments = {
+            create: body.treatments.map((treatment) => ({
+              treatmentId: treatment,
+            })),
+          };
+        }
+
+        if (body.medicines && body.medicines.length > 0) {
+          data.medicines = {
+            createMany: {
+              data: body.medicines.map((medicine) => ({
+                frequency: medicine.frequency,
+                instruction: medicine.instruction,
+                quantity: medicine.quantity,
+                dosageQuantity: medicine.dosageQuantity,
+                dosage: medicine.dosage,
+                medicineId: medicine.medicineId,
               })),
             },
-            medicines: {
-              createMany: {
-                data: body.medicines.map((medicine) => ({
-                  frequency: medicine.frequency,
-                  instruction: medicine.instruction,
-                  quantity: medicine.quantity,
-                  dosageQuantity: medicine.dosageQuantity,
-                  dosage: medicine.dosage,
-                  medicineId: medicine.medicineId,
-                })),
-              },
-            },
-          },
-        });
+          };
+        }
+
+        const record = await db.medicalRecord.create({ data });
 
         return c.json({
           success: "Medical record created",
