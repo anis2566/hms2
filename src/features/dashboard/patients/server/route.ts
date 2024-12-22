@@ -446,14 +446,17 @@ const app = new Hono()
     ),
     async (c) => {
       const patientId = await c.req.param("patientId");
-      const { page, limit, sort } = await c.req.valid("query");
+      const { page, limit, sort, status } = await c.req.valid("query");
 
       const pageNumber = parseInt(page || "1");
       const limitNumber = parseInt(limit || "5");
 
       const [payments, totalCount] = await Promise.all([
         db.payment.findMany({
-          where: { patientId },
+          where: {
+            patientId,
+            ...(status && { status }),
+          },
           include: {
             patient: true,
           },

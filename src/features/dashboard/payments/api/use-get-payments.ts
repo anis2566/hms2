@@ -12,12 +12,13 @@ export const useGetPayments = () => {
   const limit = searchParams.get("limit") || undefined;
   const sort = searchParams.get("sort") || undefined;
   const status = searchParams.get("status") || undefined;
+  const q = searchParams.get("query") || undefined;
 
   const query = useQuery<ResponseType>({
-    queryKey: ["payments", page, limit, sort, status],
+    queryKey: ["payments", page, limit, sort, status, q],
     queryFn: async () => {
       const res = await client.api.payments.$get({
-        query: { page, limit, sort, status },
+        query: { page, limit, sort, status, query: q },
       });
       const parseData = await res.json();
       return { payments: parseData.payments, totalCount: parseData.totalCount };

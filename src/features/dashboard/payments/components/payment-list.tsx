@@ -1,21 +1,30 @@
 "use client"
 
+import { Trash2 } from "lucide-react";
+import { MoreVerticalIcon, RefreshCcw } from "lucide-react";
+import { format } from "date-fns";
+import { Edit } from "lucide-react";
+import Link from "next/link";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
 import { useGetPayments } from "../api/use-get-payments"
-import { Trash2 } from "lucide-react";
-import { MoreVerticalIcon, RefreshCcw } from "lucide-react";
-import { format } from "date-fns";
-import { Edit } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
+import { usePaymentDelete, usePaymentStatus } from "@/hooks/use-payment";
+import { PAYMENT_STATUS } from "@/constant";
+import { EmptyStat } from "@/components/empty-stat";
+import { CustomPagination } from "@/components/custom-pagination";
+import { Header } from "./header";
 
 export const PaymentList = () => {
-    const { data } = useGetPayments()
+    const { onOpen } = usePaymentStatus()
+    const { onOpen: onOpenDelete } = usePaymentDelete()
+
+    const { data, isLoading } = useGetPayments()
 
     return (
         <Card>
@@ -24,6 +33,7 @@ export const PaymentList = () => {
                 <CardDescription>Manage your payments here</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+                <Header />
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-accent hover:bg-accent/80">
@@ -54,7 +64,7 @@ export const PaymentList = () => {
                                     <TableCell>{payment.amount}</TableCell>
                                     <TableCell>{payment.method}</TableCell>
                                     <TableCell>
-                                        <Badge className="rounded-full">{payment.status}</Badge>
+                                        <Badge className="rounded-full" variant={payment.status === PAYMENT_STATUS.PAID ? "default" : payment.status === PAYMENT_STATUS.CANCELLED ? "destructive" : "outline"}>{payment.status}</Badge>
                                     </TableCell>
                                     <TableCell>
                                         <DropdownMenu>
@@ -70,11 +80,11 @@ export const PaymentList = () => {
                                                         <p>Edit</p>
                                                     </Link>
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem className="flex items-center gap-x-3">
+                                                <DropdownMenuItem className="flex items-center gap-x-3" onClick={() => onOpen(payment.id, payment.status as PAYMENT_STATUS.PENDING)}>
                                                     <RefreshCcw className="w-5 h-5" />
                                                     <p>Change Status</p>
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem className="flex items-center gap-x-3 text-rose-500 group">
+                                                <DropdownMenuItem className="flex items-center gap-x-3 text-rose-500 group" onClick={() => onOpenDelete(payment.id)}>
                                                     <Trash2 className="w-5 h-5 group-hover:text-rose-600" />
                                                     <p className="group-hover:text-rose-600">Delete</p>
                                                 </DropdownMenuItem>
@@ -85,6 +95,8 @@ export const PaymentList = () => {
                             ))}
                     </TableBody>
                 </Table>
+                {!isLoading && data?.payments.length === 0 && <EmptyStat title="No Payment found" />}
+                <CustomPagination totalCount={data?.totalCount || 0} />
             </CardContent>
         </Card>
     )

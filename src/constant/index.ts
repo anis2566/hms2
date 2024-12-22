@@ -79,7 +79,7 @@ export enum MEDICINE_DOSAGE {
 
 export enum PAYMENT_METHOD {
   CASH = "Cash",
-  BANK_TRANSFER = "Bank_Transfer",
+  BANK_TRANSFER = "Bank Transfer",
   CARD = "Card",
 }
 
