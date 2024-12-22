@@ -47,30 +47,28 @@ export const MedicalRecordForm = ({ patientId }: MedicalRecordFormProps) => {
       vitalSigns: "",
       doctorId: "",
       patientId: patientId,
-      treatments: [],
-      medicines: [],
+      treatments: undefined,
+      medicines: undefined,
       attachments: []
     },
   });
 
   const handleTreatmentsChange = (value: string) => {
-    const isExist = form.getValues("treatments").includes(value);
+    const isExist = form.getValues("treatments")?.includes(value);
     if (isExist) {
-      form.setValue("treatments", form.getValues("treatments").filter((treatment) => treatment !== value));
+      form.setValue("treatments", form.getValues("treatments")?.filter((treatment) => treatment !== value));
     } else {
-      form.setValue("treatments", [...form.getValues("treatments"), value]);
+      form.setValue("treatments", [...form.getValues("treatments") || [], value]);
     }
   };
 
   const handleRemoveMedicine = (medicineId: string) => {
-    form.setValue("medicines", form.getValues("medicines").filter((medicine) => medicine.medicineId !== medicineId));
+    form.setValue("medicines", form.getValues("medicines")?.filter((medicine) => medicine.medicineId !== medicineId));
   };
 
   const onSubmit = (data: MedicalRecordSchemaType) => {
     createMedicalRecord(data);
   };
-
-  console.log(form.formState.errors)
 
   return (
     <Card>
@@ -190,7 +188,7 @@ export const MedicalRecordForm = ({ patientId }: MedicalRecordFormProps) => {
                         </TableHeader>
                         <TableBody>
                           {
-                            form.watch("medicines").map((medicine) => (
+                            form.watch("medicines")?.map((medicine) => (
                               <TableRow key={medicine.medicineId}>
                                 <TableCell>{medicine.medicineName}</TableCell>
                                 <TableCell>{`$${medicine.medicinePrice}`}</TableCell>
@@ -222,7 +220,7 @@ export const MedicalRecordForm = ({ patientId }: MedicalRecordFormProps) => {
                 <FormItem>
                   <FormLabel>Attachments</FormLabel>
                   <FormControl>
-                    <ImageUpload disabled={isLoadingCreateMedicalRecord} onUploadComplete={field.onChange} multiple={true} />
+                    <ImageUpload values={field.value || []} onUploadComplete={value => field.onChange(value)} disabled={isLoadingCreateMedicalRecord} multiple={true} path="patients" name={patientId} />
                   </FormControl>
                 </FormItem>
               )}

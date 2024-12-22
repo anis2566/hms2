@@ -1,4 +1,4 @@
-import { Appointment, Doctor, Patient, Service } from "@prisma/client";
+import { Appointment, Patient, Service } from "@prisma/client";
 import { create } from "zustand";
 
 import { APPOINTMENT_STATUS } from "@/constant";

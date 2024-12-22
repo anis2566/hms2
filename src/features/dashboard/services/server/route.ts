@@ -36,7 +36,7 @@ const app = new Hono()
         });
 
         return c.json({ success: "Service created." }, 201);
-      } catch (error) {
+      } catch {
         return c.json({ error: "Internal server error" }, 500);
       }
     }

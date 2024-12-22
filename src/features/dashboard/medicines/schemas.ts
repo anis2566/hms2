@@ -12,21 +12,10 @@ export type GenericSchemaType = z.infer<typeof GenericSchema>;
 export const ManufacturerSchema = z.object({
   name: requiredString,
   description: z.string().optional(),
-});
-
-export const ManufacturerSchemaWithImage = z.object({
-  name: requiredString,
-  description: z.string().optional(),
-  imageUrl: z
-    .instanceof(File)
-    .refine((file) => file.size > 0, { message: "A valid file is required" })
-    .optional(),
+  imageUrl: z.string().optional(),
 });
 
 export type ManufacturerSchemaType = z.infer<typeof ManufacturerSchema>;
-export type ManufacturerSchemaTypeWithImage = z.infer<
-  typeof ManufacturerSchemaWithImage
->;
 
 export const MedicineSchema = z.object({
   name: requiredString,

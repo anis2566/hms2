@@ -4,19 +4,20 @@ import { z } from "zod"
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Send, Trash2 } from "lucide-react";
+import { Patient } from "@prisma/client";
+import Image from "next/image";
+import { useEffect } from "react";
 
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
 
 import ImageUpload from "@/components/ui/image-upload";
 import { LoadingButton } from "@/components/loading-button";
 import { useUpdateImages } from "../api/use-update-images";
-import { Patient } from "@prisma/client";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
 
-const formSchema = z.object({
-    files: z.array(z.instanceof(File)),
+export const formSchema = z.object({
+    files: z.array(z.string()).optional(),
+    existingFils: z.array(z.string())
 })
 
 interface Props {
@@ -24,42 +25,39 @@ interface Props {
 }
 
 export const ImagesForm = ({ patient }: Props) => {
-    const [images, setImages] = useState<string[]>([])
-
     const handleDeleteImage = (url: string) => {
-        console.log(images)
-        console.log(images.filter(item => item !== url))
-        // setImages((prevImages) => prevImages.filter((item) => item !== url));
+        form.setValue("existingFils", form.getValues("existingFils").filter(item => item !== url))
     };
 
     useEffect(() => {
         if (patient?.images) {
-            setImages([...patient.images]); // Ensure a fresh copy to avoid direct mutation
+            form.setValue("existingFils", [...patient.images])
         }
     }, [patient]);
-
-
-    const { mutate: updateImages, isPending } = useUpdateImages()
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            files: []
+            files: [],
+            existingFils: patient.images || []
         },
     });
 
+    const { mutate: updateImages, isPending } = useUpdateImages({ form })
+
     const onSubmit = (data: z.infer<typeof formSchema>) => {
+        console.log(data)
         updateImages({
             param: { id: patient.id },
-            form: data
+            json: data
         })
     }
 
     return (
-        <div>
+        <div className="space-y-6">
             <div className="grid md:grid-cols-6 gap-6">
                 {
-                    images.map((image, index) => (
+                    form.watch("existingFils")?.map((image, index) => (
                         <div className="aspect-square relative border p-2 rounded-md" key={index}>
                             <Image src={image} alt={image} fill className="object-contain h-[150px] p-2" />
                             <Button className="absolute right-0 top-0" size="icon" variant="destructive" onClick={() => handleDeleteImage(image)}>
@@ -78,8 +76,11 @@ export const ImagesForm = ({ patient }: Props) => {
                             <FormItem>
                                 <FormControl>
                                     <ImageUpload
+                                        values={field.value || []}
                                         multiple={true}
-                                        onUploadComplete={field.onChange}
+                                        onUploadComplete={values => field.onChange(values)}
+                                        name={patient.id}
+                                        path="patients"
                                     />
                                 </FormControl>
                                 <FormMessage />

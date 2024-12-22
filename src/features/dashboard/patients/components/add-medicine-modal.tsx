@@ -48,7 +48,7 @@ export const AddMedicineModal = () => {
     };
 
     const onSubmit = (data: MedicalRecordMedicineSchemaType) => {
-        medicineForm?.setValue("medicines", [...medicineForm.getValues("medicines"), data]);
+        medicineForm?.setValue("medicines", [...medicineForm.getValues("medicines") || [], data]);
         onClose();
     };
 
@@ -57,7 +57,7 @@ export const AddMedicineModal = () => {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Add Medicine</DialogTitle>
-                    <DialogDescription>Add a medicine to the patient's medical record</DialogDescription>
+                    <DialogDescription>Add a medicine to the patient&apos;s medical record</DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
@@ -176,7 +176,7 @@ export const AddMedicineModal = () => {
                         <FormField
                             control={form.control}
                             name="dosage"
-                            render={({ field }) => (
+                            render={() => (
                                 <FormItem>
                                     <FormLabel>Dosage</FormLabel>
                                     <FormControl>

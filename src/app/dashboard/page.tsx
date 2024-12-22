@@ -1,10 +1,9 @@
 import { Metadata } from "next";
 
 import { ContentLayout } from "@/features/dashboard/components/content-layout";
-import { db } from "@/lib/db";
 
 export const metadata: Metadata = {
-    title: "TomarSports | Dashboard",
+    title: "Dashboard",
     description: "TomarSports Dashboard",
 };
 

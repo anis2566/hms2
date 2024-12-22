@@ -44,6 +44,7 @@ import { cn } from "@/lib/utils";
 import { PatientSchema, PatientSchemaType } from "../schemas";
 import { LoadingButton } from "@/components/loading-button";
 import { useUpdatePatient } from "../api/use-update-patient";
+import ImageUpload from "@/components/ui/image-upload";
 
 interface Props {
     patient: Patient
@@ -53,7 +54,7 @@ export const EditPatientForm = ({ patient }: Props) => {
     const [isOpen, setIsOpen] = useState(false);
     const [date, setDate] = useState<Date | null>(null);
 
-    const { mutate: updatePatient, isPending } = useUpdatePatient();
+    const { mutate: updatePatient, isPending } = useUpdatePatient({ redirectUrl: `/dashboard/patients` });
 
     const form = useForm<PatientSchemaType>({
         resolver: zodResolver(PatientSchema),
@@ -65,7 +66,7 @@ export const EditPatientForm = ({ patient }: Props) => {
             address: patient.address,
             dob: patient.dob.toISOString(),
             emergencyContact: patient.emergencyContact,
-            imageUrl: "",
+            imageUrl: patient.imageUrl || "",
             bloodGroup: patient.bloodGroup as BLOOD_GROUP,
         },
     });
@@ -206,8 +207,6 @@ export const EditPatientForm = ({ patient }: Props) => {
                                                     field.onChange(selectedDate?.toDateString());
                                                 }}
                                                 onDayClick={() => setIsOpen(false)}
-                                                fromYear={1900}
-                                                toYear={new Date().getFullYear()}
                                                 defaultMonth={new Date(field.value)}
                                             />
                                         </PopoverContent>
@@ -255,6 +254,19 @@ export const EditPatientForm = ({ patient }: Props) => {
                                         <Textarea {...field} disabled={isPending} />
                                     </FormControl>
                                     <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="imageUrl"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Image</FormLabel>
+                                    <FormControl>
+                                        <ImageUpload values={field.value ? [field.value] : []} onUploadComplete={value => field.onChange(value[0])} disabled={false} multiple={false} path="patients" name="Patient" />
+                                    </FormControl>
                                 </FormItem>
                             )}
                         />

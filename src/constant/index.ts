@@ -2,7 +2,6 @@ import {
   FileText,
   LucideIcon,
   Calendar,
-  FileSpreadsheet,
   DollarSign,
   User,
   Heart,

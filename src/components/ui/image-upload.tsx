@@ -8,34 +8,78 @@ import React, { useState } from "react";
 import { Button } from "./button";
 import { Input } from "./input";
 import { cn } from "@/lib/utils";
+import { uploadFile } from "@/lib/uploader";
 
 interface ImageUploadProps {
-    onUploadComplete?: (url: File | File[]) => void;
+    values: string[];
+    onUploadComplete?: (urls: string[]) => void;
     multiple?: boolean;
     disabled?: boolean;
+    path: string;
+    name: string;
+    extension?: string;
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ onUploadComplete, multiple = false, disabled = false }) => {
-    const [selectedImages, setSelectedImages] = useState<File[]>([]);
+const ImageUpload: React.FC<ImageUploadProps> = ({
+    values = [],
+    onUploadComplete,
+    multiple = false,
+    disabled = false,
+    path,
+    name,
+    extension = "png",
+}) => {
+    const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
-    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleMultipleImageUpload = async (files: FileList) => {
+        const uploadedUrls: string[] = [];
+        await Promise.all(
+            Array.from(files).map(async (item) => {
+                const randomNumber = Math.floor(100000 + Math.random() * 900000);
+                const imageUrl = await uploadFile({
+                    file: item,
+                    path: path,
+                    name: `${name}${randomNumber}`,
+                    extension,
+                });
+                uploadedUrls.push(imageUrl.path);
+            })
+        );
+        setSelectedImages((prev) => [...prev, ...uploadedUrls]);
+        onUploadComplete?.([...selectedImages, ...uploadedUrls]);
+    };
+
+    const handleSingleImageUpload = async (file: File) => {
+        const randomNumber = Math.floor(100000 + Math.random() * 900000);
+        const imageUrl = await uploadFile({
+            file,
+            path: path,
+            name: `${name}${randomNumber}`,
+            extension,
+        });
+        const newImage = imageUrl.path;
+        setSelectedImages([newImage]);
+        onUploadComplete?.([newImage]);
+    };
+
+    const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (!files) return;
+
         if (multiple) {
-            const images = event.target.files;
-            if (images) {
-                setSelectedImages([...selectedImages, ...Array.from(images)]);
-                onUploadComplete?.([...selectedImages, ...Array.from(images)]);
-            }
+            await handleMultipleImageUpload(files);
         } else {
-            const image = event.target.files?.[0];
+            const image = files[0];
             if (image) {
-                setSelectedImages([image]);
-                onUploadComplete?.(image);
+                await handleSingleImageUpload(image);
             }
         }
     };
 
-    const removeSelectedImage = (image: File) => {
-        setSelectedImages(selectedImages.filter((img) => img.name !== image.name));
+    const removeSelectedImage = (image: string) => {
+        const updatedImages = selectedImages.filter((img) => img !== image);
+        setSelectedImages(updatedImages);
+        onUploadComplete?.(updatedImages);
     };
 
     return (
@@ -49,7 +93,6 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onUploadComplete, multiple = 
                         <div className="border p-2 rounded-md max-w-min mx-auto">
                             <IoCloudUploadOutline size="1.6em" />
                         </div>
-
                         <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                             <span className="font-semibold">Select an image</span>
                         </p>
@@ -67,22 +110,21 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onUploadComplete, multiple = 
                 />
             </div>
 
-            {
-                selectedImages.length > 0 && selectedImages.map((image) => (
-                    <div className="flex items-center justify-between" key={image.name}>
+            {values.length > 0 &&
+                values.map((image, index) => (
+                    <div className="flex items-center justify-between" key={index}>
                         <Image
                             width={100}
                             height={100}
-                            src={URL.createObjectURL(image)}
+                            src={image}
                             className="w-[80px] h-[80px] object-cover opacity-70 rounded-full border border-gray-300"
                             alt="uploaded image"
                         />
-                        <Button onClick={() => removeSelectedImage(image)} size="icon" variant="destructive">
+                        <Button type="button" onClick={() => removeSelectedImage(image)} size="icon" variant="destructive">
                             <X size="1.2em" />
                         </Button>
                     </div>
-                ))
-            }
+                ))}
         </div>
     );
 };

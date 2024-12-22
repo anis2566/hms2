@@ -1,13 +1,12 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
+import { endOfMonth, getDaysInMonth, startOfMonth } from "date-fns";
+import { Appointment, Patient, Service } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { isAdmin, sessionMiddleware } from "@/lib/session-middleware";
 import { APPOINTMENT_STATUS } from "@/constant";
-import { endOfMonth, getDaysInMonth, startOfMonth } from "date-fns";
-import { Appointment, Patient, Service } from "@prisma/client";
-import { AppointmentSchema } from "../schemas";
 
 interface AppointmentWithRelation extends Appointment {
   patient: Patient;
@@ -64,6 +63,8 @@ const app = new Hono()
       const body = c.req.valid("json");
 
       try {
+        // TODO:
+        // THIS CHECKING NEED TO BE FIXED
         const isBooked = await db.appointment.findFirst({
           where: {
             doctorId: body.doctorId,
@@ -99,6 +100,16 @@ const app = new Hono()
 
         if (isBooked) {
           return c.json({ error: "Doctor already booked" });
+        }
+
+        if (body.status === APPOINTMENT_STATUS.CONFIRMED) {
+          await db.payment.create({
+            data: {
+              patientId: body.patientId,
+              amount: 1000,
+              method: "Cash",
+            },
+          });
         }
 
         await db.appointment.create({
@@ -337,7 +348,7 @@ const app = new Hono()
             acc.push(dateEntry);
           }
 
-          let doctorEntry = dateEntry.appointments.find(
+          const doctorEntry = dateEntry.appointments.find(
             (entry) => entry.name === doctorName
           );
 

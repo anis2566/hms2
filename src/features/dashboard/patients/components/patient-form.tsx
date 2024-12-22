@@ -43,6 +43,7 @@ import { cn } from "@/lib/utils";
 import { PatientSchema, PatientSchemaType } from "../schemas";
 import { LoadingButton } from "@/components/loading-button";
 import { useCreatePatient } from "../api/use-create-patient";
+import ImageUpload from "@/components/ui/image-upload";
 
 export const PatientForm = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -250,6 +251,19 @@ export const PatientForm = () => {
                     <Textarea {...field} disabled={isPending} />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="imageUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Image</FormLabel>
+                  <FormControl>
+                    <ImageUpload values={field.value ? [field.value] : []} onUploadComplete={value => field.onChange(value[0])} disabled={false} multiple={true} path="patients" name="Patient" />
+                  </FormControl>
                 </FormItem>
               )}
             />

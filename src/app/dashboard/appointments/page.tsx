@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 
 import {
     Breadcrumb,
@@ -34,7 +35,10 @@ const Appointments = async () => {
                     </BreadcrumbItem>
                 </BreadcrumbList>
             </Breadcrumb>
-            <AppointmentPage />
+
+            <Suspense fallback={<div>Loading...</div>}>
+                <AppointmentPage />
+            </Suspense>
         </ContentLayout>
     );
 };

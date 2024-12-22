@@ -17,7 +17,7 @@ import { LoadingButton } from "@/components/loading-button"
 import { useCreateHealth } from "../api/use-create-health"
 
 interface HealthWithPatient extends Patient {
-    health: PatientHealth
+    health: PatientHealth | null;
 }
 
 interface Props {

@@ -17,17 +17,10 @@ export const useUpdateDoctor = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
-    mutationFn: async ({ param, form }) => {
+    mutationFn: async ({ param, json }) => {
       const res = await client.api.doctors.edit[":id"]["$put"]({
         param: { id: param.id },
-        form: {
-          name: form.name,
-          title: form.title,
-          email: form.email,
-          phone: form.phone,
-          address: form.address,
-          password: form.password,
-        },
+        json,
       });
       return await res.json();
     },

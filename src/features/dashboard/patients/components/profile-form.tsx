@@ -42,10 +42,9 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 
 import { cn } from "@/lib/utils";
-import { PatientaWithImageSchemType, PatientWithImageSchema } from "../schemas";
+import { PatientSchemaType, PatientSchema } from "../schemas";
 import { LoadingButton } from "@/components/loading-button";
 import ImageUpload from "@/components/ui/image-upload";
-import { useUpdatePatientWithImage } from "../api/use-update-patient-with-image";
 import { useUpdatePatient } from "../api/use-update-patient";
 
 interface Props {
@@ -58,10 +57,9 @@ export const ProfileForm = ({ patient }: Props) => {
     const [date, setDate] = useState<Date | null>(null);
 
     const { mutate: updatePatient, isPending } = useUpdatePatient({ redirectUrl: undefined });
-    const { mutate: updatePatientWithImage, isPending: isPendingWithImage } = useUpdatePatientWithImage();
 
-    const form = useForm<PatientaWithImageSchemType>({
-        resolver: zodResolver(PatientWithImageSchema),
+    const form = useForm<PatientSchemaType>({
+        resolver: zodResolver(PatientSchema),
         defaultValues: {
             name: patient.name,
             email: patient.email || "",
@@ -75,12 +73,11 @@ export const ProfileForm = ({ patient }: Props) => {
         },
     });
 
-    const onSubmit = (values: PatientaWithImageSchemType) => {
-        if (form.watch("imageUrl")) {
-            updatePatientWithImage({ form: { ...values }, param: { id: patient.id } });
-        } else {
-            updatePatient({ json: { ...values, imageUrl: patient.imageUrl || undefined }, param: { id: patient.id } });
-        }
+    const onSubmit = (values: PatientSchemaType) => {
+        updatePatient({
+            param: { id: patient.id },
+            json: values
+        })
     };
 
     return (
@@ -112,11 +109,7 @@ export const ProfileForm = ({ patient }: Props) => {
                                                     </Button>
                                                 </div>
                                             ) : (
-                                                <ImageUpload
-                                                    multiple={false}
-                                                    onUploadComplete={field.onChange}
-                                                    disabled={isPending || isPendingWithImage}
-                                                />
+                                                <ImageUpload values={field.value ? [field.value] : []} onUploadComplete={value => field.onChange(value[0])} disabled={false} multiple={true} path="patients" name="Patient" />
                                             )
                                         }
                                     </FormControl>
@@ -132,7 +125,7 @@ export const ProfileForm = ({ patient }: Props) => {
                                 <FormItem>
                                     <FormLabel>Name</FormLabel>
                                     <FormControl>
-                                        <Input {...field} disabled={isPending || isPendingWithImage} />
+                                        <Input {...field} disabled={isPending} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -146,7 +139,7 @@ export const ProfileForm = ({ patient }: Props) => {
                                 <FormItem>
                                     <FormLabel>Email</FormLabel>
                                     <FormControl>
-                                        <Input {...field} disabled={isPending || isPendingWithImage} />
+                                        <Input {...field} disabled={isPending} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -162,7 +155,7 @@ export const ProfileForm = ({ patient }: Props) => {
                                     <Select
                                         onValueChange={(value) => field.onChange(value as GENDER)}
                                         defaultValue={field.value}
-                                        disabled={isPending || isPendingWithImage}
+                                        disabled={isPending}
                                     >
                                         <FormControl>
                                             <SelectTrigger>
@@ -198,7 +191,7 @@ export const ProfileForm = ({ patient }: Props) => {
                                                         "w-full font-normal",
                                                         !field.value && "text-muted-foreground"
                                                     )}
-                                                    disabled={isPending || isPendingWithImage}
+                                                    disabled={isPending}
                                                 >
                                                     {field.value ? (
                                                         `${format(field.value, "PPP")}`
@@ -237,7 +230,7 @@ export const ProfileForm = ({ patient }: Props) => {
                                 <FormItem>
                                     <FormLabel>Phone</FormLabel>
                                     <FormControl>
-                                        <Input {...field} disabled={isPending || isPendingWithImage} />
+                                        <Input {...field} disabled={isPending} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -251,7 +244,7 @@ export const ProfileForm = ({ patient }: Props) => {
                                 <FormItem>
                                     <FormLabel>Emergency Contact</FormLabel>
                                     <FormControl>
-                                        <Input {...field} disabled={isPending || isPendingWithImage} />
+                                        <Input {...field} disabled={isPending} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -265,7 +258,7 @@ export const ProfileForm = ({ patient }: Props) => {
                                 <FormItem>
                                     <FormLabel>Address</FormLabel>
                                     <FormControl>
-                                        <Textarea {...field} disabled={isPending || isPendingWithImage} />
+                                        <Textarea {...field} disabled={isPending} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -273,7 +266,7 @@ export const ProfileForm = ({ patient }: Props) => {
                         />
 
                         <LoadingButton
-                            isLoading={isPending || isPendingWithImage}
+                            isLoading={isPending}
                             title="Update"
                             loadingTitle="Updating..."
                             onClick={form.handleSubmit(onSubmit)}

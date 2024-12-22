@@ -12,7 +12,6 @@ import {
     Calendar,
     DollarSign,
     Dessert,
-    FileText,
 } from "lucide-react";
 
 type Submenu = {
@@ -200,26 +199,6 @@ export function getAdminMenuList(pathname: string): Group[] {
                             href: "/dashboard/services",
                             label: "List",
                             active: pathname === "/dashboard/services",
-                            icon: List,
-                        },
-                    ],
-                },
-                {
-                    href: "",
-                    label: "Invoices",
-                    active: pathname.includes("/dashboard/invoices"),
-                    icon: FileText,
-                    submenus: [
-                        {
-                            href: "/dashboard/invoices/new",
-                            label: "New",
-                            active: pathname === "/dashboard/invoices/new",
-                            icon: PlusCircle,
-                        },
-                        {
-                            href: "/dashboard/invoices",
-                            label: "List",
-                            active: pathname === "/dashboard/invoices",
                             icon: List,
                         },
                     ],

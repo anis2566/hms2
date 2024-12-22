@@ -10,20 +10,18 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
 import { useCreateManufacturer } from "@/hooks/use-manufacturer"
-import { ManufacturerSchemaTypeWithImage, ManufacturerSchemaWithImage } from "@/features/dashboard/medicines/schemas"
+import { ManufacturerSchemaType, ManufacturerSchema } from "@/features/dashboard/medicines/schemas"
 import { LoadingButton } from "@/components/loading-button"
 import { useCreateManufacturer as useCreateManufacturerApi } from "@/features/dashboard/medicines/api/use-create-manufacturer"
-import FileUpload from "@/components/ui/file-upload"
-import { useCreateManufacturerWithImage } from "../api/use-create-manufacturer-with-image"
+import ImageUpload from "@/components/ui/image-upload"
 
 export const NewManufacturerModal = () => {
     const { isOpen, onClose } = useCreateManufacturer()
 
     const { mutate: createManufacturer, isPending } = useCreateManufacturerApi({ onClose })
-    const { mutate: createManufacturerWithImage, isPending: isPendingWithImage } = useCreateManufacturerWithImage({ onClose })
 
-    const form = useForm<ManufacturerSchemaTypeWithImage>({
-        resolver: zodResolver(ManufacturerSchemaWithImage),
+    const form = useForm<ManufacturerSchemaType>({
+        resolver: zodResolver(ManufacturerSchema),
         defaultValues: {
             name: "",
             description: "",
@@ -31,22 +29,9 @@ export const NewManufacturerModal = () => {
         },
     })
 
-    const onSubmit = (data: ManufacturerSchemaTypeWithImage) => {
-        if (data.imageUrl) {
-            createManufacturerWithImage({
-                name: data.name,
-                description: data.description,
-                imageUrl: data.imageUrl,
-            })
-        } else {
-            createManufacturer({
-                name: data.name,
-                description: data.description,
-            })
-        }
+    const onSubmit = (data: ManufacturerSchemaType) => {
+        createManufacturer(data)
     }
-
-    console.log(form.formState.errors)
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -65,7 +50,7 @@ export const NewManufacturerModal = () => {
                                 <FormItem>
                                     <FormLabel>Name</FormLabel>
                                     <FormControl>
-                                        <Input {...field} disabled={isPending || isPendingWithImage} autoFocus />
+                                        <Input {...field} disabled={isPending} autoFocus />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -79,7 +64,7 @@ export const NewManufacturerModal = () => {
                                 <FormItem>
                                     <FormLabel>Description</FormLabel>
                                     <FormControl>
-                                        <Textarea {...field} disabled={isPending || isPendingWithImage} />
+                                        <Textarea {...field} disabled={isPending} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -91,25 +76,16 @@ export const NewManufacturerModal = () => {
                             name="imageUrl"
                             render={({ field }) => (
                                 <FormItem>
+                                    <FormLabel>Image</FormLabel>
                                     <FormControl>
-                                        <FileUpload
-                                            title="Upload Image"
-                                            onUploadComplete={(file) => {
-                                                field.onChange(file)
-                                            }}
-                                            acceptedFileTypes={["image/jpeg", "image/png", "image/jpg"]}
-                                            multiple={false}
-                                            maxSizeInMB={5}
-                                            className="max-w-[450px]"
-                                        />
+                                        <ImageUpload values={field.value ? [field.value] : []} onUploadComplete={value => field.onChange(value[0])} disabled={false} multiple={true} path="patients" name="Patient" />
                                     </FormControl>
-                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
 
                         <LoadingButton
-                            isLoading={isPending || isPendingWithImage}
+                            isLoading={isPending}
                             title="Create"
                             loadingTitle="Creating..."
                             onClick={form.handleSubmit(onSubmit)}
