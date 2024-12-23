@@ -39,6 +39,12 @@ export const useUpdateAppointmentStatus = ({
         queryClient.invalidateQueries({
           queryKey: ["appointments-calendar"],
         });
+        queryClient.invalidateQueries({
+          queryKey: ["doctors-patients"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["doctors-appointments"],
+        });
         onClose();
       }
 

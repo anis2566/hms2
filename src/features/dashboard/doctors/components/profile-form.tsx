@@ -1,11 +1,11 @@
 "use client"
 
+import { Doctor } from "@prisma/client"
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Send, Trash2 } from "lucide-react";
-import { Doctor } from "@prisma/client";
-import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useState } from "react";
 
 import {
     Card,
@@ -23,60 +23,93 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
-import { LoadingButton } from "@/components/loading-button";
-import { DoctorSchemaType, DoctorSchema } from "../schemas";
+import { DoctorSchema, DoctorSchemaType } from "../schemas";
 import { TITLE } from "@/constant";
-import { useUpdateDoctor } from "../api/use-update-doctor";
+import { LoadingButton } from "@/components/loading-button";
 import ImageUpload from "@/components/ui/image-upload";
+import { useUpdateDoctor } from "../api/use-update-doctor";
 
-interface EditDoctorFormProps {
+interface Props {
     doctor: Doctor
 }
 
-export const EditDoctorForm = ({ doctor }: EditDoctorFormProps) => {
-    const [imageUrl, setImageUrl] = useState<string | null>(null);
+export const ProfileForm = ({ doctor }: Props) => {
+    const [isEdiImage, setIsEditImage] = useState<boolean>(true)
 
-    const { mutate: updateDoctor, isPending } = useUpdateDoctor({ redirectUrl: undefined });
-
-    useEffect(() => {
-        if (doctor.imageUrl) {
-            setImageUrl(doctor.imageUrl);
-        }
-    }, [doctor.imageUrl]);
+    const { mutate: updateProfile, isPending } = useUpdateDoctor({ redirectUrl: `/dashboard/doctors/${doctor.id}` })
 
     const form = useForm<DoctorSchemaType>({
         resolver: zodResolver(DoctorSchema),
         defaultValues: {
             name: doctor.name,
-            title: doctor.title,
-            email: doctor.email,
+            email: doctor.email || "",
+            title: doctor.title as TITLE,
             phone: doctor.phone,
             address: doctor.address,
-            imageUrl: doctor.imageUrl || "",
             password: doctor.password,
+            imageUrl: doctor.imageUrl || "",
         },
     });
 
     const onSubmit = (values: DoctorSchemaType) => {
-        updateDoctor({
+        updateProfile({
             param: { id: doctor.id },
-            json: values
+            json: {
+                ...values,
+            }
         })
-    }
+    };
+
+    console.log(form.formState.errors)
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Edit Doctor</CardTitle>
-                <CardDescription>Edit a doctor to the system</CardDescription>
+                <CardTitle>Doctor Profile</CardTitle>
+                <CardDescription>
+                    Customize doctor profile.
+                </CardDescription>
             </CardHeader>
             <CardContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <FormField
+                            control={form.control}
+                            name="imageUrl"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Profile Image</FormLabel>
+                                    <FormControl>
+                                        {
+                                            isEdiImage && doctor.imageUrl ? (
+                                                <div className="relative">
+                                                    <div className="relative aspect-square max-h-[100px]">
+                                                        <Image src={doctor.imageUrl} alt="Profile" fill className="object-contain rounded-full" />
+                                                    </div>
+                                                    <Button type="button" variant="destructive" className="absolute right-0 top-0" onClick={() => setIsEditImage(false)}>
+                                                        <Trash2 className="h-5 w-5" />
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                <ImageUpload values={field.value ? [field.value] : []} onUploadComplete={value => field.onChange(value[0])} disabled={false} multiple={true} path="patients" name="Patient" />
+                                            )
+                                        }
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
                         <FormField
                             control={form.control}
                             name="name"
@@ -154,32 +187,6 @@ export const EditDoctorForm = ({ doctor }: EditDoctorFormProps) => {
                                         <Textarea {...field} disabled={isPending} />
                                     </FormControl>
                                     <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        <FormField
-                            control={form.control}
-                            name="imageUrl"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Image</FormLabel>
-                                    {
-                                        imageUrl ? (
-                                            <div className="relative">
-                                                <div className="w-full aspect-square relative max-h-[100px]">
-                                                    <Image src={imageUrl} alt="Doctor Image" fill className="object-contain" />
-                                                </div>
-                                                <Button disabled={isPending} type="button" variant="destructive" size="icon" onClick={() => setImageUrl(null)} className="absolute top-0 right-0">
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
-                                            </div>
-                                        ) : (
-                                            <FormControl>
-                                                <ImageUpload values={field.value ? [field.value] : []} onUploadComplete={value => field.onChange(value[0])} disabled={false} multiple={true} path="patients" name="Patient" />
-                                            </FormControl>
-                                        )
-                                    }
                                 </FormItem>
                             )}
                         />

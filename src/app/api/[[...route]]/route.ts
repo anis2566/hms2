@@ -10,6 +10,7 @@ import medicineRouter from "@/features/dashboard/medicines/server/route";
 import serviceRouter from "@/features/dashboard/services/server/route";
 import appointmentRouter from "@/features/dashboard/appointments/server/route";
 import paymentsRouter from "@/features/dashboard/payments/server/route";
+import dashboardRouter from "@/features/dashboard/server/route";
 
 const app = new Hono()
   .basePath("/api")
@@ -21,7 +22,8 @@ const app = new Hono()
   .route("/medicines", medicineRouter)
   .route("/services", serviceRouter)
   .route("/appointments", appointmentRouter)
-  .route("/payments", paymentsRouter);
+  .route("/payments", paymentsRouter)
+  .route("/dashboard", dashboardRouter);
 
 export const GET = handle(app);
 export const POST = handle(app);

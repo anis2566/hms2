@@ -2,6 +2,7 @@ import { Doctor } from "@prisma/client";
 import Image from "next/image";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { SidebarNavs } from "./sidebar-navs";
 
 // import { SidebarNavs } from "./sidebar-navs";
 
@@ -28,7 +29,7 @@ export const Sidebar = ({ doctor, doctorId }: Props) => {
                     <p className="text-xs text-muted-foreground">{doctor?.email}</p>
                     <p className="text-xs text-muted-foreground">{doctor.phone}</p>
                 </div>
-                {/* <SidebarNavs patientId={patientId} /> */}
+                <SidebarNavs doctorId={doctorId} />
             </CardContent>
         </Card>
     );

@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Send } from "lucide-react";
 import { Appointment } from "@prisma/client";
+import { useSearchParams } from "next/navigation";
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -24,11 +25,14 @@ interface Props {
 }
 
 export const EditAppointmentForm = ({ appointment }: Props) => {
+    const searchParams = useSearchParams();
+    const redirectUrl = searchParams.get("redirectUrl");
+
     const { data: services, isLoading: isServicesLoading } = useGetServicesForSelect();
     const { data: patients, isLoading: isPatientsLoading } = useGetPatientsForSelect();
     const { data, isLoading: isDoctorsLoading } = useGetDoctorsForSelect();
 
-    const { mutate: updateAppointment, isPending } = useUpdateAppointment({ redirectUrl: undefined })
+    const { mutate: updateAppointment, isPending } = useUpdateAppointment({ redirectUrl: redirectUrl || undefined })
 
     const form = useForm<AppointmentSchemaType>({
         resolver: zodResolver(AppointmentSchema),

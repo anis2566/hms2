@@ -31,6 +31,8 @@ export const useDeleteAppointment = ({ onClose }: Props) => {
         queryClient.invalidateQueries({ queryKey: ["appointments"] });
         queryClient.invalidateQueries({ queryKey: ["appointments-calendar"] });
         queryClient.invalidateQueries({ queryKey: ["patient-appointments"] });
+        queryClient.invalidateQueries({ queryKey: ["doctors-patients"] });
+        queryClient.invalidateQueries({ queryKey: ["doctors-appointments"] });
         onClose();
       }
 

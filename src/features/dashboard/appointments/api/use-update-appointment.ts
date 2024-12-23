@@ -44,6 +44,9 @@ export const useUpdateAppointment = ({
         queryClient.invalidateQueries({
           queryKey: ["patient-appointments"],
         });
+        queryClient.invalidateQueries({
+          queryKey: ["doctors-appointments"],
+        });
         if (redirectUrl) {
           router.push(redirectUrl);
         } else {

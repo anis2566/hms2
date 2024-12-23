@@ -30,7 +30,6 @@ export const Header = () => {
     const [limit, setLimit] = useState<string>("");
     const [query, setQuery] = useState<string>("");
     const [sort, setSort] = useState<string>("");
-    const [title, setTitle] = useState<string>("");
 
     const pathname = usePathname();
     const router = useRouter();
@@ -51,22 +50,6 @@ export const Header = () => {
 
         router.push(url);
     }, [debouncedQuery, router, pathname]);
-
-    const handleTitleChange = (value: string) => {
-        setTitle(value);
-
-        const url = queryString.stringifyUrl(
-            {
-                url: pathname,
-                query: {
-                    title: value,
-                },
-            },
-            { skipNull: true, skipEmptyString: true },
-        );
-
-        router.push(url);
-    }
 
     const handleSortChange = (value: string) => {
         setSort(value);
@@ -109,7 +92,6 @@ export const Header = () => {
         setLimit("5");
         setQuery("");
         setSort("");
-        setTitle("");
 
         router.push(pathname);
     };
@@ -147,24 +129,6 @@ export const Header = () => {
                         </div>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-x-2">
-                                <Select
-                                    value={title}
-                                    onValueChange={(value) => handleTitleChange(value)}
-                                >
-                                    <SelectTrigger className="w-[150px]">
-                                        <SelectValue placeholder="Title" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {
-                                            Object.values(TITLE).map((title) => (
-                                                <SelectItem value={title} key={title}>
-                                                    {title}
-                                                </SelectItem>
-                                            ))
-                                        }
-                                    </SelectContent>
-                                </Select>
-
                                 <Select
                                     value={sort}
                                     onValueChange={(value) => handleSortChange(value)}
@@ -215,24 +179,6 @@ export const Header = () => {
                         value={query}
                     />
                 </div>
-
-                <Select
-                    value={title}
-                    onValueChange={(value) => handleTitleChange(value)}
-                >
-                    <SelectTrigger className="w-[150px]">
-                        <SelectValue placeholder="Title" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {
-                            Object.values(TITLE).map((title) => (
-                                <SelectItem value={title} key={title}>
-                                    {title}
-                                </SelectItem>
-                            ))
-                        }
-                    </SelectContent>
-                </Select>
 
                 <Select
                     value={sort}

@@ -1,19 +1,30 @@
 import { Metadata } from "next";
+import Link from "next/link";
+
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList } from "@/components/ui/breadcrumb";
 
 import { ContentLayout } from "@/features/dashboard/components/content-layout";
+import { DashboardPage } from "@/features/dashboard/components/dashboard-page";
 
 export const metadata: Metadata = {
     title: "Dashboard",
     description: "TomarSports Dashboard",
 };
 
-const Dashboard = async () => {
-    // await db.appointment.deleteMany()
+const Dashboard = () => {
     return (
         <ContentLayout title="Dashboard">
-            <div className="w-full">
-                <h1>Dashboard</h1>
-            </div>
+            <Breadcrumb>
+                <BreadcrumbList>
+                    <BreadcrumbItem>
+                        <BreadcrumbLink asChild>
+                            <Link href="/dashboard">Dashboard</Link>
+                        </BreadcrumbLink>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
+
+            <DashboardPage />
         </ContentLayout>
     )
 };

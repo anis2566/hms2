@@ -152,6 +152,177 @@ const app = new Hono()
 
       return c.json({ doctors, totalCount });
     }
-  );
+  )
+  .get(
+    "/patients/:id",
+    zValidator(
+      "param",
+      z.object({
+        id: z.string(),
+      })
+    ),
+    zValidator(
+      "query",
+      z.object({
+        query: z.string().optional(),
+        page: z.string().optional(),
+        limit: z.string().optional(),
+        sort: z.string().optional(),
+      })
+    ),
+    async (c) => {
+      const id = await c.req.param("id");
+      const { query, page, limit, sort } = await c.req.valid("query");
+
+      const pageNumber = parseInt(page || "1");
+      const limitNumber = parseInt(limit || "5");
+
+      const [patients, totalCount] = await Promise.all([
+        db.patient.findMany({
+          where: {
+            appointments: {
+              some: {
+                doctorId: id,
+              },
+            },
+            ...(query && {
+              name: {
+                contains: query,
+                mode: "insensitive",
+              },
+            }),
+          },
+          orderBy: {
+            ...(sort === "asc" ? { createdAt: "asc" } : { createdAt: "desc" }),
+          },
+          skip: (pageNumber - 1) * limitNumber,
+          take: limitNumber,
+        }),
+        db.patient.count({
+          where: {
+            appointments: {
+              some: {
+                doctorId: id,
+              },
+            },
+            ...(query && {
+              name: {
+                contains: query,
+                mode: "insensitive",
+              },
+            }),
+          },
+        }),
+      ]);
+
+      return c.json({ patients, totalCount });
+    }
+  ).get(
+    "/appointments/:id",
+    zValidator(
+      "param",
+      z.object({
+        id: z.string(),
+      })
+    ),
+    zValidator(
+      "query",
+      z.object({
+        query: z.string().optional(),
+        page: z.string().optional(),
+        limit: z.string().optional(),
+        sort: z.string().optional(),
+      })
+    ),
+    async (c) => {
+      const id = await c.req.param("id");
+      const { query, page, limit, sort } = await c.req.valid("query");
+
+      const pageNumber = parseInt(page || "1");
+      const limitNumber = parseInt(limit || "5");
+
+      const [appointments, totalCount] = await Promise.all([
+        db.appointment.findMany({
+          where: {
+            doctorId: id,
+            ...(query && {
+              patient: {
+                name: {
+                  contains: query,
+                  mode: "insensitive"
+                }
+              }
+            }),
+          },
+          include: {
+            patient: true
+          },
+          orderBy: {
+            ...(sort === "asc" ? { createdAt: "asc" } : { createdAt: "desc" }),
+          },
+          skip: (pageNumber - 1) * limitNumber,
+          take: limitNumber,
+        }),
+        db.appointment.count({
+          where: {
+            doctorId: id,
+            ...(query && {
+              patient: {
+                name: {
+                  contains: query,
+                  mode: "insensitive"
+                }
+              }
+            }),
+          },
+        }),
+      ]);
+
+      return c.json({ appointments, totalCount });
+    }
+  )
+  .put(
+    "/changePassword/:id",
+    sessionMiddleware,
+    isAdmin,
+    zValidator("param", z.object({ id: z.string() })),
+    zValidator("json", z.object({
+      oldPassword: z.string(),
+      newPassword: z.string(),
+    })),
+    async (c) => {
+      try {
+        const id = await c.req.param("id");
+        const { oldPassword, newPassword } = await c.req.valid("json");
+
+        const doctor = await db.doctor.findUnique({ where: { id } });
+
+        if (!doctor) {
+          return c.json({ error: "Doctor not found" }, 404);
+        }
+
+        const user = await db.user.findUnique({ where: { id: doctor.userId } });
+
+        if (!user) {
+          return c.json({ error: "User not found" }, 404);
+        }
+
+        const isMatch = await bcrypt.compare(oldPassword, user.password!);
+
+        if (!isMatch) {
+          return c.json({ error: "Old password is incorrect" }, 400);
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await db.doctor.update({ where: { id }, data: { password: hashedPassword } });
+
+        return c.json({ success: "Password changed" }, 200);
+      } catch (error) {
+        console.log(error);
+        return c.json({ error: "Internal Server Error" }, 500);
+      }
+    }
+  )
 
 export default app;

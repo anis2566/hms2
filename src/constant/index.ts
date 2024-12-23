@@ -6,6 +6,8 @@ import {
   User,
   Heart,
   GalleryVertical,
+  Users,
+  Lock,
 } from "lucide-react";
 
 export const AUTH_COOKIE = "access-token";
@@ -184,5 +186,29 @@ export const patientSidebarNavs: PatientSidebarNavs[] = [
     href: "/health",
     label: "Health Information",
     icon: Heart,
+  },
+];
+
+export const doctorSidebarNavs: PatientSidebarNavs[] = [
+  {
+    href: "/",
+    label: "Personal Information",
+    icon: User,
+    isHome: true,
+  },
+  {
+    href: "/patients",
+    label: "Patients",
+    icon: Users,
+  },
+  {
+    href: "/appointments",
+    label: "Appointments",
+    icon: Calendar,
+  },
+  {
+    href: "/change-password",
+    label: "Change Password",
+    icon: Lock,
   },
 ];
